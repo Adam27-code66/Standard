@@ -48,9 +48,9 @@ export default function SettingsPage() {
                 style={{
                   padding: '0.75rem 1rem',
                   borderRadius: 10,
-                  background: lang === l.code ? 'rgba(59,130,246,0.15)' : 'var(--navy-800)',
-                  border: `2px solid ${lang === l.code ? '#3b82f6' : 'var(--border)'}`,
-                  color: lang === l.code ? '#60a5fa' : 'var(--text-secondary)',
+                  background: lang === l.code ? '#eff6ff' : '#ffffff',
+                  border: `2px solid ${lang === l.code ? '#1d4ed8' : '#e2e8f0'}`,
+                  color: lang === l.code ? '#1d4ed8' : '#475569',
                   fontSize: '0.9375rem',
                   cursor: 'pointer',
                   fontWeight: lang === l.code ? 700 : 400,

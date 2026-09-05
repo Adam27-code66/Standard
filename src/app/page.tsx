@@ -1,432 +1,651 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Upload, TrendingUp, Shield, Zap, BookOpen, GitBranch, AlertTriangle } from 'lucide-react';
+import {
+  Sparkles,
+  Upload,
+  ArrowRight,
+  BookOpen,
+  GitBranch,
+  FileText,
+  AlertTriangle,
+  ExternalLink,
+  Pencil,
+  Brain,
+  Box,
+  ClipboardList,
+  Search,
+  RotateCcw,
+  ShieldCheck,
+  FileCheck,
+  Home,
+  Building2,
+  Lightbulb
+} from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
 
-// ── Animated network background ──────────────────────────────
-function NetworkViz() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animId: number;
-    const nodes: { x: number; y: number; vx: number; vy: number; r: number }[] = [];
-    const N = 28;
-
-    function resize() {
-      canvas!.width = canvas!.offsetWidth;
-      canvas!.height = canvas!.offsetHeight;
-    }
-    resize();
-
-    for (let i = 0; i < N; i++) {
-      nodes.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        r: Math.random() * 2.5 + 1.5,
-      });
-    }
-
-    function draw() {
-      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
-
-      for (let i = 0; i < nodes.length; i++) {
-        const n = nodes[i];
-        n.x += n.vx;
-        n.y += n.vy;
-        if (n.x < 0 || n.x > canvas!.width) n.vx *= -1;
-        if (n.y < 0 || n.y > canvas!.height) n.vy *= -1;
-
-        for (let j = i + 1; j < nodes.length; j++) {
-          const m = nodes[j];
-          const dx = n.x - m.x;
-          const dy = n.y - m.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 140) {
-            const alpha = (1 - dist / 140) * 0.3;
-            ctx!.beginPath();
-            ctx!.strokeStyle = `rgba(59,130,246,${alpha})`;
-            ctx!.lineWidth = 0.8;
-            ctx!.moveTo(n.x, n.y);
-            ctx!.lineTo(m.x, m.y);
-            ctx!.stroke();
-          }
-        }
-
-        ctx!.beginPath();
-        ctx!.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-        ctx!.fillStyle = 'rgba(59,130,246,0.7)';
-        ctx!.fill();
-      }
-
-      animId = requestAnimationFrame(draw);
-    }
-
-    draw();
-    window.addEventListener('resize', resize);
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.4 }}
-    />
+export default function Dashboard() {
+  const [requirementText, setRequirementText] = useState(
+    'Procure 500 stainless steel water storage tanks for government hospitals'
   );
-}
 
-// ── Metric Card ───────────────────────────────────────────────
-function MetricCard({ value, label, icon, color }: { value: string; label: string; icon: string; color: string }) {
   return (
-    <div
-      className="glass-card"
-      style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}
-    >
-      <div
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 10,
-          background: `${color}20`,
-          border: `1px solid ${color}40`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.25rem',
-          flexShrink: 0,
-        }}
-      >
-        {icon}
-      </div>
-      <div>
-        <div style={{ fontSize: '1.375rem', fontWeight: 700, color: 'var(--text-primary)' }}>{value}</div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{label}</div>
-      </div>
-    </div>
-  );
-}
-
-// ── Capability Card ───────────────────────────────────────────
-function CapabilityCard({
-  icon: Icon,
-  title,
-  description,
-  color,
-}: {
-  icon: any;
-  title: string;
-  description: string;
-  color: string;
-}) {
-  return (
-    <div
-      className="glass-card"
-      style={{
-        padding: '1.375rem',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        cursor: 'default',
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)';
-        (e.currentTarget as HTMLDivElement).style.boxShadow = `0 8px 30px rgba(0,0,0,0.3), 0 0 20px ${color}20`;
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '';
-      }}
-    >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 10,
-          background: `${color}15`,
-          border: `1px solid ${color}30`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '0.875rem',
-        }}
-      >
-        <Icon size={18} color={color} />
-      </div>
-      <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
-        {title}
-      </h3>
-      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>{description}</p>
-    </div>
-  );
-}
-
-// ── Workflow Step ─────────────────────────────────────────────
-function WorkflowStep({ step, label, active }: { step: number; label: string; active?: boolean }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.375rem', flex: 1 }}>
-      <div
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: '50%',
-          background: active ? 'linear-gradient(135deg, #2563eb, #00d4ff)' : 'var(--navy-700)',
-          border: active ? 'none' : '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '0.75rem',
-          fontWeight: 700,
-          color: active ? 'white' : 'var(--text-muted)',
-          boxShadow: active ? '0 0 12px rgba(59,130,246,0.5)' : 'none',
-        }}
-      >
-        {step}
-      </div>
-      <span style={{ fontSize: '0.65rem', color: active ? '#60a5fa' : 'var(--text-muted)', textAlign: 'center', lineHeight: 1.3 }}>
-        {label}
-      </span>
-    </div>
-  );
-}
-
-const WORKFLOW_STEPS = [
-  'Input', 'AI Analysis', 'Product ID', 'Req Extraction', 'Std Matching',
-  'Relationships', 'Version Check', 'Gap Analysis', 'Certifications', 'Spec Generation',
-];
-
-export default function DashboardPage() {
-  return (
-    <AppShell title="Dashboard" subtitle="IS-SMART AI Indian Standards Intelligence">
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-
-        {/* ── Hero ─────────────────────────────────────────── */}
+    <AppShell>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+        {/* ── 1. Hero Card ("AI-Powered Standards Intelligence") ── */}
         <div
-          className="glass-card-bright"
           style={{
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: 20,
+            padding: '2.25rem 2.5rem',
             position: 'relative',
-            overflow: 'hidden',
-            padding: '3rem 2.5rem',
-            marginBottom: '1.5rem',
-            minHeight: 260,
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
+            display: 'grid',
+            gridTemplateColumns: '1fr 300px',
+            gap: '2rem',
+            alignItems: 'center',
           }}
         >
-          <NetworkViz />
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div className="badge badge-blue" style={{ marginBottom: '1rem' }}>
-              🤖 AI-Powered • Demo Mode Active
-            </div>
-            <h1
+          {/* Left Column Content */}
+          <div>
+            {/* Tag */}
+            <div
               style={{
-                fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
-                fontWeight: 800,
-                lineHeight: 1.25,
-                marginBottom: '0.875rem',
-                maxWidth: 620,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.35rem 0.85rem',
+                background: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                borderRadius: 20,
+                color: '#1d4ed8',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                letterSpacing: '0.02em',
+                marginBottom: '1.25rem',
               }}
             >
-              <span className="gradient-text">Find the Right Indian Standards.</span>
+              <Sparkles size={14} color="#1d4ed8" />
+              <span>AI-Powered Standards Intelligence</span>
+            </div>
+
+            {/* Headline */}
+            <h1
+              style={{
+                fontSize: '2.25rem',
+                fontWeight: 800,
+                color: '#0f172a',
+                lineHeight: 1.25,
+                letterSpacing: '-0.02em',
+                margin: '0 0 0.875rem 0',
+              }}
+            >
+              Find the Right <span style={{ color: '#1d4ed8' }}>Indian Standards</span>.
               <br />
               Build Better Tenders.
             </h1>
+
+            {/* Subtitle */}
             <p
               style={{
-                fontSize: '0.9375rem',
-                color: 'var(--text-secondary)',
-                lineHeight: 1.7,
-                maxWidth: 560,
-                marginBottom: '1.75rem',
+                fontSize: '0.925rem',
+                color: '#475569',
+                maxWidth: 640,
+                lineHeight: 1.6,
+                margin: '0 0 1.5rem 0',
               }}
             >
-              AI-powered assistance for identifying applicable Indian Standards, related requirements,
-              certifications, amendments, and tender specification gaps.
+              AI-powered assistance for identifying applicable Indian Standards, related requirements, certifications, amendments, and tender specification gaps.
             </p>
-            <div style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap' }}>
-              <Link href="/analyze" className="btn-primary" style={{ fontSize: '0.9375rem', padding: '0.75rem 1.75rem' }}>
-                <Zap size={16} />
-                Analyze Requirement
-              </Link>
-              <Link href="/tender" className="btn-secondary" style={{ fontSize: '0.9375rem', padding: '0.75rem 1.75rem' }}>
-                <Upload size={16} />
-                Upload Tender
-              </Link>
+
+            {/* Procurement Requirement Box */}
+            <div
+              style={{
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                borderRadius: 16,
+                padding: '1.25rem',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+              }}
+            >
+              <div style={{ fontSize: '0.7875rem', color: '#64748b', marginBottom: '0.5rem', fontWeight: 500 }}>
+                Describe your procurement requirement in detail...
+              </div>
+              <textarea
+                value={requirementText}
+                onChange={(e) => setRequirementText(e.target.value)}
+                placeholder='Example: "Procure 500 stainless steel water storage tanks for government hospitals"'
+                style={{
+                  width: '100%',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '0.9rem',
+                  color: '#0f172a',
+                  fontWeight: 500,
+                  resize: 'none',
+                  minHeight: 48,
+                  fontFamily: 'inherit',
+                }}
+              />
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  marginTop: '1rem',
+                  paddingTop: '0.75rem',
+                  borderTop: '1px solid #f1f5f9',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {/* Upload & Format Chips */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.375rem',
+                      padding: '0.45rem 0.85rem',
+                      background: '#f8fafc',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: 8,
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      color: '#334155',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Upload size={14} color="#475569" />
+                    <span>Upload Tender Document</span>
+                  </button>
+                  <span style={{ padding: '0.2rem 0.5rem', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: '0.6875rem', fontWeight: 700, color: '#ef4444' }}>PDF</span>
+                  <span style={{ padding: '0.2rem 0.5rem', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: '0.6875rem', fontWeight: 700, color: '#1d4ed8' }}>DOCX</span>
+                  <span style={{ padding: '0.2rem 0.5rem', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: '0.6875rem', fontWeight: 700, color: '#10b981' }}>XLSX</span>
+                </div>
+
+                {/* Primary CTA */}
+                <Link
+                  href={`/analyze?query=${encodeURIComponent(requirementText)}`}
+                  className="btn-primary"
+                  style={{
+                    padding: '0.65rem 1.35rem',
+                    borderRadius: 10,
+                    fontSize: '0.875rem',
+                    fontWeight: 700,
+                    gap: '0.5rem',
+                    background: '#1d4ed8',
+                  }}
+                >
+                  <Sparkles size={16} fill="#ffffff" />
+                  <span>Analyze Requirement</span>
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
             </div>
           </div>
 
-          {/* Floating badge */}
+          {/* Right Column Visual (India Map Graphic with Network Ring) */}
           <div
             style={{
-              position: 'absolute',
-              top: '1.5rem',
-              right: '1.5rem',
-              background: 'rgba(16,185,129,0.1)',
-              border: '1px solid rgba(16,185,129,0.3)',
-              borderRadius: 10,
-              padding: '0.625rem 1rem',
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-              gap: 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              height: 280,
             }}
           >
-            <div style={{ fontSize: '0.65rem', color: '#10b981', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              System Status
+            {/* Orbital concentric rings */}
+            <div
+              style={{
+                position: 'absolute',
+                width: 240,
+                height: 240,
+                borderRadius: '50%',
+                border: '1px dashed #bfdbfe',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                width: 180,
+                height: 180,
+                borderRadius: '50%',
+                border: '1px solid #dbeafe',
+                background: 'rgba(239, 246, 255, 0.4)',
+              }}
+            />
+
+            {/* Orbiting Icon Nodes */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 20,
+                right: 50,
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: '#ffffff',
+                border: '1px solid #bfdbfe',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+              }}
+            >
+              <FileText size={16} color="#1d4ed8" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-              <div className="pulse-glow" style={{ width: 7, height: 7, background: '#10b981', borderRadius: '50%' }} />
-              <span style={{ fontSize: '0.75rem', color: '#34d399', fontWeight: 600 }}>Demo Active</span>
+
+            <div
+              style={{
+                position: 'absolute',
+                top: 70,
+                right: 15,
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: '#ffffff',
+                border: '1px solid #bfdbfe',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+              }}
+            >
+              <ShieldCheck size={16} color="#1d4ed8" />
+            </div>
+
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 50,
+                right: 35,
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: '#ffffff',
+                border: '1px solid #bfdbfe',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+              }}
+            >
+              <Building2 size={16} color="#1d4ed8" />
+            </div>
+
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 30,
+                left: 45,
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: '#ffffff',
+                border: '1px solid #bfdbfe',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+              }}
+            >
+              <GitBranch size={16} color="#1d4ed8" />
+            </div>
+
+            {/* Central Node Badge */}
+            <div
+              style={{
+                width: 68,
+                height: 68,
+                borderRadius: 20,
+                background: '#1d4ed8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 8px 25px rgba(29, 78, 216, 0.4)',
+                zIndex: 2,
+              }}
+            >
+              <Box size={34} color="#ffffff" />
             </div>
           </div>
         </div>
 
-        {/* ── Metrics ──────────────────────────────────────── */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1rem',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <MetricCard value="1,250+" label="Standards Indexed (Demo KB)" icon="📚" color="#3b82f6" />
-          <MetricCard value="4,800+" label="Relationships Mapped" icon="🔗" color="#00d4ff" />
-          <MetricCard value="128" label="Tender Analyses Run" icon="📋" color="#a78bfa" />
-          <MetricCard value="347" label="Potential Issues Detected" icon="⚠️" color="#f59e0b" />
-        </div>
-
-        {/* ── AI Workflow ───────────────────────────────────── */}
-        <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-            <GitBranch size={16} color="#60a5fa" />
-            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              AI Analysis Pipeline
-            </h2>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-            {WORKFLOW_STEPS.map((step, i) => (
-              <div key={step} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25rem', flex: 1, minWidth: 70 }}>
-                <WorkflowStep step={i + 1} label={step} active={i < 3} />
-                {i < WORKFLOW_STEPS.length - 1 && (
-                  <div style={{ marginTop: 14, flexShrink: 0 }}>
-                    <ArrowRight size={12} color="var(--text-muted)" />
-                  </div>
-                )}
+        {/* ── 2. Metric Stat Cards Row ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem' }}>
+          {/* Card 1 */}
+          <div className="glass-card" style={{ padding: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  STANDARDS INDEXED
+                </div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.2rem 0 0.1rem 0' }}>
+                  1,250+
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Across all sectors</div>
               </div>
-            ))}
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: '#eff6ff', border: '1px solid #bfdbfe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BookOpen size={18} color="#1d4ed8" />
+              </div>
+            </div>
+            {/* Sparkline SVG */}
+            <svg viewBox="0 0 200 40" style={{ width: '100%', height: 36, display: 'block' }}>
+              <path d="M0 30 Q 30 15, 60 25 T 120 10 T 180 28 L 200 15 L 200 40 L 0 40 Z" fill="rgba(37,99,235,0.12)" />
+              <path d="M0 30 Q 30 15, 60 25 T 120 10 T 180 28 L 200 15" fill="none" stroke="#2563eb" strokeWidth="2.5" />
+            </svg>
           </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem' }}>
-            IS-SMART understands requirements semantically — not just keyword matching.
-          </p>
+
+          {/* Card 2 */}
+          <div className="glass-card" style={{ padding: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  RELATIONSHIPS MAPPED
+                </div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.2rem 0 0.1rem 0' }}>
+                  4,800+
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Standards interconnections</div>
+              </div>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: '#d1fae5', border: '1px solid #a7f3d0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <GitBranch size={18} color="#059669" />
+              </div>
+            </div>
+            <svg viewBox="0 0 200 40" style={{ width: '100%', height: 36, display: 'block' }}>
+              <path d="M0 35 Q 40 20, 80 28 T 140 12 T 200 20 L 200 40 L 0 40 Z" fill="rgba(16,185,129,0.12)" />
+              <path d="M0 35 Q 40 20, 80 28 T 140 12 T 200 20" fill="none" stroke="#10b981" strokeWidth="2.5" />
+            </svg>
+          </div>
+
+          {/* Card 3 */}
+          <div className="glass-card" style={{ padding: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  TENDERS ANALYZED
+                </div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.2rem 0 0.1rem 0' }}>
+                  128
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>This month</div>
+              </div>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: '#f3e8ff', border: '1px solid #e9d5ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FileText size={18} color="#7c3aed" />
+              </div>
+            </div>
+            <svg viewBox="0 0 200 40" style={{ width: '100%', height: 36, display: 'block' }}>
+              <path d="M0 25 Q 50 35, 100 20 T 160 30 T 200 10 L 200 40 L 0 40 Z" fill="rgba(139,92,246,0.12)" />
+              <path d="M0 25 Q 50 35, 100 20 T 160 30 T 200 10" fill="none" stroke="#8b5cf6" strokeWidth="2.5" />
+            </svg>
+          </div>
+
+          {/* Card 4 */}
+          <div className="glass-card" style={{ padding: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  ISSUES DETECTED
+                </div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.2rem 0 0.1rem 0' }}>
+                  347
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Potential spec gaps</div>
+              </div>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: '#ffedd5', border: '1px solid #fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={18} color="#ea580c" />
+              </div>
+            </div>
+            <svg viewBox="0 0 200 40" style={{ width: '100%', height: 36, display: 'block' }}>
+              <path d="M0 32 Q 40 18, 90 28 T 150 15 T 200 25 L 200 40 L 0 40 Z" fill="rgba(249,115,22,0.12)" />
+              <path d="M0 32 Q 40 18, 90 28 T 150 15 T 200 25" fill="none" stroke="#f97316" strokeWidth="2.5" />
+            </svg>
+          </div>
         </div>
 
-        {/* ── Capability Cards ──────────────────────────────── */}
-        <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.875rem' }}>
-          Platform Capabilities
-        </h2>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: '1rem',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <CapabilityCard
-            icon={Zap}
-            title="AI Requirement Analysis"
-            description="Extracts product type, application, environment, and technical requirements from natural language input."
-            color="#3b82f6"
-          />
-          <CapabilityCard
-            icon={BookOpen}
-            title="Semantic Standards Matching"
-            description="Matches requirements against the knowledge base using AI relevance scoring, not simple keyword search."
-            color="#00d4ff"
-          />
-          <CapabilityCard
-            icon={GitBranch}
-            title="Standards Relationship Graph"
-            description="Visualizes normative references, test methods, safety, installation, and related product standards."
-            color="#a78bfa"
-          />
-          <CapabilityCard
-            icon={TrendingUp}
-            title="Version & Amendment Check"
-            description="Detects outdated standard references in tender documents and recommends the latest editions."
-            color="#10b981"
-          />
-          <CapabilityCard
-            icon={AlertTriangle}
-            title="Tender Gap Analysis"
-            description="Audits procurement specifications for missing test standards, safety requirements, and certification clauses."
-            color="#f59e0b"
-          />
-          <CapabilityCard
-            icon={Shield}
-            title="Specification Generator"
-            description="Generates structured, ready-to-use tender specifications based on identified applicable standards."
-            color="#ec4899"
-          />
-        </div>
-
-        {/* ── Quick Start Scenarios ─────────────────────────── */}
-        <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-          <div style={{ marginBottom: '1rem' }}>
-            <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
-              Quick Demo Scenarios
-            </h2>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Try a pre-built scenario to experience the full IS-SMART workflow
-            </p>
+        {/* ── 3. AI Analysis Pipeline Section ── */}
+        <div className="glass-card" style={{ padding: '1.5rem 1.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+              AI Analysis Pipeline
+            </h3>
+            <Link
+              href="/analyze"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8125rem', color: '#1d4ed8', fontWeight: 600, textDecoration: 'none' }}
+            >
+              <span>View Full Pipeline</span>
+              <ExternalLink size={14} />
+            </Link>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+
+          {/* 10-Step Horizontal Process Row */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              position: 'relative',
+              overflowX: 'auto',
+              paddingBottom: '0.5rem',
+            }}
+          >
             {[
-              { icon: '💡', label: 'LED Street Light', href: '/analyze?scenario=scenario-led' },
-              { icon: '🔧', label: 'Industrial Water Pump', href: '/analyze?scenario=scenario-pump' },
-              { icon: '🏗️', label: 'Cement / OPC', href: '/analyze?scenario=scenario-cement' },
-              { icon: '⚡', label: 'MCB / Electrical', href: '/analyze?scenario=scenario-mcb' },
-              { icon: '⛑️', label: 'Safety Helmet', href: '/analyze?scenario=scenario-ppe' },
-            ].map((s) => (
-              <Link
-                key={s.label}
-                href={s.href}
-                className="btn-ghost"
-                style={{ gap: '0.5rem', fontSize: '0.8125rem' }}
-              >
-                <span>{s.icon}</span>
-                <span>{s.label}</span>
-                <ArrowRight size={12} />
-              </Link>
-            ))}
+              { icon: Pencil, label: 'Input Requirement', sub: '' },
+              { icon: Brain, label: 'AI Analysis', sub: 'Understanding', active: true },
+              { icon: Box, label: 'Product ID', sub: 'Identification' },
+              { icon: ClipboardList, label: 'Req Extraction', sub: 'Key Parameters' },
+              { icon: BookOpen, label: 'Standards Matching', sub: 'AI Matching' },
+              { icon: GitBranch, label: 'Relationships', sub: 'Mapping' },
+              { icon: RotateCcw, label: 'Version Check', sub: 'Latest Versions' },
+              { icon: AlertTriangle, label: 'Gap Analysis', sub: 'Issue Detection' },
+              { icon: ShieldCheck, label: 'Certifications', sub: 'Validations' },
+              { icon: FileCheck, label: 'Spec Generation', sub: 'Output' },
+            ].map((step, idx, arr) => {
+              const StepIcon = step.icon;
+              return (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: 90 }}>
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: '50%',
+                        background: step.active ? '#dbeafe' : '#f1f5f9',
+                        border: `1px solid ${step.active ? '#1d4ed8' : '#e2e8f0'}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      <StepIcon size={20} color={step.active ? '#1d4ed8' : '#64748b'} />
+                    </div>
+                    <div style={{ fontSize: '0.725rem', fontWeight: 700, color: step.active ? '#1d4ed8' : '#1e293b', lineHeight: 1.2 }}>
+                      {step.label}
+                    </div>
+                    {step.sub && (
+                      <div style={{ fontSize: '0.65rem', color: '#64748b', marginTop: 2 }}>{step.sub}</div>
+                    )}
+                  </div>
+                  {idx < arr.length - 1 && (
+                    <div style={{ color: '#cbd5e1', fontSize: '1rem', fontWeight: 300, margin: '0 0.25rem' }}>
+                      →
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* ── AI Disclaimer ─────────────────────────────────── */}
-        <div
-          style={{
-            background: 'rgba(245, 158, 11, 0.06)',
-            border: '1px solid rgba(245, 158, 11, 0.2)',
-            borderRadius: 10,
-            padding: '0.875rem 1.25rem',
-            display: 'flex',
-            gap: '0.75rem',
-            alignItems: 'flex-start',
-          }}
-        >
-          <AlertTriangle size={16} color="#f59e0b" style={{ flexShrink: 0, marginTop: 2 }} />
-          <p style={{ fontSize: '0.75rem', color: '#fbbf24', lineHeight: 1.6, margin: 0 }}>
-            <strong>AI-generated recommendations.</strong> Verify applicable standards, current editions, amendments, and certification requirements against official BIS sources before finalizing procurement documents. Standards data shown is from the Demo Knowledge Base and is for prototype purposes only.
-          </p>
-        </div>
+        {/* ── 4. Bottom Grid (3 Columns) ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.25rem' }}>
+          {/* Column 1: Recent Analyses */}
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                Recent Analyses
+              </h3>
+              <Link href="/history" style={{ fontSize: '0.8125rem', color: '#1d4ed8', fontWeight: 600, textDecoration: 'none' }}>
+                View All
+              </Link>
+            </div>
 
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {[
+                { title: 'Water Tanks', time: 'Today, 10:24 AM', icon: Home },
+                { title: 'RCC Pipes', time: 'Yesterday', icon: Building2 },
+                { title: 'LED Street Light', time: 'Oct 12, 2023', icon: Lightbulb },
+              ].map((item, i) => {
+                const ItemIcon = item.icon;
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0.875rem 1rem',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 12,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div
+                        style={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: 10,
+                          background: '#ffffff',
+                          border: '1px solid #e2e8f0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <ItemIcon size={18} color="#475569" />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{item.title}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{item.time}</div>
+                      </div>
+                    </div>
+                    <span className="badge badge-green">✓ Completed</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Column 2: Top Standards by Usage */}
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                Top Standards by Usage
+              </h3>
+              <Link href="/explorer" style={{ fontSize: '0.8125rem', color: '#1d4ed8', fontWeight: 600, textDecoration: 'none' }}>
+                Explore
+              </Link>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+              {[
+                { name: '1. IS 1239', pct: '86%' },
+                { name: '2. IS 456', pct: '74%' },
+                { name: '3. IS 1893', pct: '62%' },
+                { name: '4. IS 2062', pct: '55%' },
+                { name: '5. IS 10262', pct: '41%' },
+              ].map((std, i) => (
+                <div key={i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.35rem' }}>
+                    <span>{std.name}</span>
+                    <span style={{ color: '#64748b', fontWeight: 600 }}>{std.pct}</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: std.pct }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Column 3: Issue Summary */}
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                Issue Summary
+              </h3>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              {/* Donut Graphic */}
+              <div style={{ position: 'relative', width: 110, height: 110, flexShrink: 0 }}>
+                <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#e2e8f0" strokeWidth="3.8" />
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#ef4444" strokeWidth="3.8" strokeDasharray="41 100" strokeDashoffset="0" />
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#3b82f6" strokeWidth="3.8" strokeDasharray="28 100" strokeDashoffset="-41" />
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#a855f7" strokeWidth="3.8" strokeDasharray="19 100" strokeDashoffset="-69" />
+                  <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#10b981" strokeWidth="3.8" strokeDasharray="12 100" strokeDashoffset="-88" />
+                </svg>
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', lineHeight: 1 }}>347</span>
+                  <span style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: 2 }}>
+                    TOTAL ISSUES
+                  </span>
+                </div>
+              </div>
+
+              {/* Legend List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#334155', fontWeight: 500 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} />
+                    <span>Missing</span>
+                  </div>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>138</span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#334155', fontWeight: 500 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6' }} />
+                    <span>Outdated</span>
+                  </div>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>104</span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#334155', fontWeight: 500 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#a855f7' }} />
+                    <span>Ambiguous</span>
+                  </div>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>69</span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#334155', fontWeight: 500 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
+                    <span>Cert Gaps</span>
+                  </div>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>36</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </AppShell>
   );
