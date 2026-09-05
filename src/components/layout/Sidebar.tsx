@@ -16,42 +16,44 @@ import {
   ChevronRight,
   Droplet
 } from 'lucide-react';
-
-const NAV_GROUPS = [
-  {
-    title: 'ANALYSIS',
-    items: [
-      { href: '/analyze', icon: Zap, label: 'Analyze Requirement' },
-      { href: '/tender', icon: FileText, label: 'Tender Analyzer' },
-      { href: '/specification', icon: FileEdit, label: 'Spec Assistant' },
-    ],
-  },
-  {
-    title: 'KNOWLEDGE',
-    items: [
-      { href: '/explorer', icon: Search, label: 'Standards Explorer' },
-      { href: '/graph', icon: GitBranch, label: 'Standards Graph' },
-    ],
-  },
-  {
-    title: 'INSIGHTS',
-    items: [
-      { href: '/analyze#gap-analysis', icon: AlertTriangle, label: 'Gap Analysis' },
-      { href: '/history#version-check', icon: RotateCcw, label: 'Version & Amendments' },
-      { href: '/history', icon: History, label: 'Analysis History' },
-    ],
-  },
-];
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { t } = useLanguage();
+
+  const NAV_GROUPS = [
+    {
+      title: 'ANALYSIS',
+      items: [
+        { href: '/analyze', icon: Zap, label: t('analyzeReq') || 'Analyze Requirement' },
+        { href: '/tender', icon: FileText, label: t('tenderAnalyzer') || 'Tender Analyzer' },
+        { href: '/specification', icon: FileEdit, label: t('specAssistant') || 'Spec Assistant' },
+      ],
+    },
+    {
+      title: 'KNOWLEDGE',
+      items: [
+        { href: '/explorer', icon: Search, label: t('standardsExplorer') || 'Standards Explorer' },
+        { href: '/graph', icon: GitBranch, label: t('standardsGraph') || 'Standards Graph' },
+      ],
+    },
+    {
+      title: 'INSIGHTS',
+      items: [
+        { href: '/analyze#gap-analysis', icon: AlertTriangle, label: t('gapAnalysis') || 'Gap Analysis' },
+        { href: '/history#version-check', icon: RotateCcw, label: t('versionCheck') || 'Version & Amendments' },
+        { href: '/history', icon: History, label: t('analysisHistory') || 'Analysis History' },
+      ],
+    },
+  ];
 
   return (
     <aside
       style={{
         width: 260,
-        background: '#ffffff',
-        borderRight: '1px solid #e2e8f0',
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
         position: 'fixed',
@@ -75,22 +77,22 @@ export default function Sidebar() {
           style={{
             width: 36,
             height: 36,
-            background: '#1d4ed8',
+            background: 'var(--primary)',
             borderRadius: 10,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: '#ffffff',
-            boxShadow: '0 4px 10px rgba(29, 78, 216, 0.25)',
+            boxShadow: '0 4px 10px rgba(37, 99, 235, 0.25)',
           }}
         >
           <Droplet size={20} fill="#ffffff" />
         </div>
         <div>
-          <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0f172a', letterSpacing: '0.02em', lineHeight: 1.1 }}>
+          <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)', letterSpacing: '0.02em', lineHeight: 1.1 }}>
             IS-SMART
           </div>
-          <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 500, letterSpacing: '0.01em', marginTop: 2 }}>
+          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 500, letterSpacing: '0.01em', marginTop: 2 }}>
             Indian Standards Intelligence
           </div>
         </div>
@@ -113,7 +115,7 @@ export default function Sidebar() {
           }}
         >
           <LayoutDashboard size={18} />
-          <span>Dashboard</span>
+          <span>{t('dashboard') || 'Dashboard'}</span>
         </Link>
 
         {/* Grouped Nav Items */}
@@ -123,7 +125,7 @@ export default function Sidebar() {
               style={{
                 fontSize: '0.65rem',
                 fontWeight: 700,
-                color: '#94a3b8',
+                color: 'var(--text-muted)',
                 letterSpacing: '0.08em',
                 padding: '0 0.5rem',
                 marginBottom: '0.5rem',
@@ -163,11 +165,11 @@ export default function Sidebar() {
       <div style={{ padding: '0.875rem' }}>
         <div
           style={{
-            background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
+            background: 'linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%)',
             borderRadius: 14,
             padding: '1rem',
             color: '#ffffff',
-            boxShadow: '0 8px 20px rgba(29, 78, 216, 0.25)',
+            boxShadow: '0 8px 20px rgba(37, 99, 235, 0.25)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.5rem' }}>
@@ -207,7 +209,7 @@ export default function Sidebar() {
               transition: 'background 0.2s',
             }}
           >
-            <span>Ask IS-SMART</span>
+            <span>{t('askIsSmart') || 'Ask IS-SMART'}</span>
             <ChevronRight size={14} />
           </Link>
         </div>
@@ -217,16 +219,16 @@ export default function Sidebar() {
       <div
         style={{
           padding: '0.875rem 1.25rem',
-          borderTop: '1px solid #f1f5f9',
+          borderTop: '1px solid var(--border)',
           display: 'flex',
           flexDirection: 'column',
           gap: 4,
         }}
       >
-        <div style={{ fontSize: '0.625rem', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.06em' }}>
-          SYSTEM STATUS
+        <div style={{ fontSize: '0.625rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
+          {t('systemStatus') || 'SYSTEM STATUS'}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: '#334155', fontWeight: 500 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
           <span
             style={{
               width: 8,
@@ -236,7 +238,7 @@ export default function Sidebar() {
               boxShadow: '0 0 6px rgba(16, 185, 129, 0.6)',
             }}
           />
-          <span>All Systems Operational</span>
+          <span>{t('allOperational') || 'All Systems Operational'}</span>
         </div>
       </div>
     </aside>

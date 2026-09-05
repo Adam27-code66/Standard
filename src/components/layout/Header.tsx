@@ -1,8 +1,11 @@
 'use client';
 
-import { Search, Sun, Globe, Bell } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, Sun, Moon, Globe, Bell, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { searchStandards } from '@/data/demoStandards';
 import { useLanguage, LANGUAGES } from '@/context/LanguageContext';
-import { useState } from 'react';
+import { useTheme } from '@/context/ThemeContext';
 
 interface HeaderProps {
   title?: string;
@@ -11,16 +14,45 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const { lang, setLang } = useLanguage();
+  const router = useRouter();
+  const { lang, setLang, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+
   const [langOpen, setLangOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const currentLang = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
+
+  // Global Ctrl+K / Cmd+K keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const searchResults = searchQuery.trim() ? searchStandards(searchQuery.trim()).slice(0, 5) : [];
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (searchQuery.trim()) {
+      setSearchOpen(false);
+      router.push(`/explorer?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   return (
     <header
       style={{
         height: 68,
-        background: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
+        background: 'var(--surface)',
+        borderBottom: '1px solid var(--border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -31,12 +63,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
         gap: '1rem',
       }}
     >
-      {/* Left: Mobile Menu Trigger or Empty spacer */}
+      {/* Left: Mobile Menu Trigger */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         {onMenuClick && (
           <button
             onClick={onMenuClick}
-            style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 4 }}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
             aria-label="Open menu"
           >
             ☰
@@ -44,71 +76,140 @@ export default function Header({ onMenuClick }: HeaderProps) {
         )}
       </div>
 
-      {/* Center: Search Bar (as shown in reference photo) */}
+      {/* Center: Live Search Bar with Dropdown & Ctrl+K */}
       <div style={{ flex: 1, maxWidth: 520, margin: '0 auto', position: 'relative' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.625rem',
-            background: '#ffffff',
-            border: '1px solid #cbd5e1',
-            borderRadius: 24,
-            padding: '0.45rem 1rem',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
-          }}
-        >
-          <Search size={16} color="#64748b" />
-          <input
-            type="text"
-            placeholder="Search standards, products, tenders..."
+        <form onSubmit={handleSearchSubmit}>
+          <div
             style={{
-              flex: 1,
-              border: 'none',
-              outline: 'none',
-              background: 'transparent',
-              fontSize: '0.85rem',
-              color: '#0f172a',
-            }}
-          />
-          <kbd
-            style={{
-              padding: '0.15rem 0.45rem',
-              background: '#f1f5f9',
-              border: '1px solid #e2e8f0',
-              borderRadius: 6,
-              fontSize: '0.6875rem',
-              color: '#64748b',
-              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.625rem',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 24,
+              padding: '0.45rem 1rem',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
             }}
           >
-            Ctrl + K
-          </kbd>
-        </div>
+            <Search size={16} color="var(--text-muted)" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder={t('searchPlaceholder') || 'Search standards, products, tenders...'}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => setSearchOpen(true)}
+              style={{
+                flex: 1,
+                border: 'none',
+                outline: 'none',
+                background: 'transparent',
+                fontSize: '0.85rem',
+                color: 'var(--text-primary)',
+              }}
+            />
+            <kbd
+              style={{
+                padding: '0.15rem 0.45rem',
+                background: 'var(--surface-hover)',
+                border: '1px solid var(--border)',
+                borderRadius: 6,
+                fontSize: '0.6875rem',
+                color: 'var(--text-muted)',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+              onClick={() => searchInputRef.current?.focus()}
+            >
+              Ctrl + K
+            </kbd>
+          </div>
+        </form>
+
+        {/* Live Search Results Dropdown */}
+        {searchOpen && searchQuery.trim().length > 0 && (
+          <>
+            <div style={{ position: 'fixed', inset: 0, zIndex: 80 }} onClick={() => setSearchOpen(false)} />
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                left: 0,
+                right: 0,
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 12,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                zIndex: 90,
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ padding: '0.5rem 0.875rem', fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>
+                MATCHING INDIAN STANDARDS ({searchResults.length})
+              </div>
+              {searchResults.map((std) => (
+                <div
+                  key={std.id}
+                  onClick={() => {
+                    setSearchOpen(false);
+                    router.push(`/explorer?q=${encodeURIComponent(std.standardNumber)}`);
+                  }}
+                  style={{
+                    padding: '0.65rem 0.875rem',
+                    borderBottom: '1px solid var(--border)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.75rem',
+                    background: 'var(--surface)',
+                  }}
+                >
+                  <div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', fontFamily: 'monospace' }}>
+                      {std.standardNumber}
+                    </span>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>{std.title}</div>
+                  </div>
+                  <ArrowRight size={14} color="var(--text-muted)" />
+                </div>
+              ))}
+              {searchResults.length === 0 && (
+                <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  No standards found. Press Enter to search.
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Right Tools Bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        {/* Light/Dark Toggle Icon Button */}
+        {/* Light/Dark Toggle Button */}
         <button
+          onClick={toggleTheme}
           style={{
             width: 36,
             height: 36,
             borderRadius: '50%',
-            border: '1px solid #e2e8f0',
-            background: '#ffffff',
+            border: '1px solid var(--border)',
+            background: 'var(--surface)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#475569',
+            color: 'var(--text-secondary)',
             cursor: 'pointer',
           }}
-          title="Toggle Theme"
+          title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
         >
-          <Sun size={18} />
+          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
         </button>
 
-        {/* Language Selector */}
+        {/* Language Selector Dropdown */}
         <div style={{ position: 'relative' }}>
           <button
             onClick={() => setLangOpen(!langOpen)}
@@ -117,18 +218,18 @@ export default function Header({ onMenuClick }: HeaderProps) {
               alignItems: 'center',
               gap: '0.375rem',
               padding: '0.4rem 0.75rem',
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
               borderRadius: 20,
               fontSize: '0.8125rem',
               fontWeight: 600,
-              color: '#334155',
+              color: 'var(--text-primary)',
               cursor: 'pointer',
             }}
           >
-            <Globe size={16} color="#64748b" />
+            <Globe size={16} color="var(--text-muted)" />
             <span>{currentLang.name}</span>
-            <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>▼</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>▼</span>
           </button>
 
           {langOpen && (
@@ -142,8 +243,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   position: 'absolute',
                   right: 0,
                   top: 'calc(100% + 6px)',
-                  background: '#ffffff',
-                  border: '1px solid #e2e8f0',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
                   borderRadius: 12,
                   minWidth: 180,
                   overflow: 'hidden',
@@ -155,7 +256,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   style={{
                     padding: '0.5rem 0.875rem 0.375rem',
                     fontSize: '0.65rem',
-                    color: '#94a3b8',
+                    color: 'var(--text-muted)',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
@@ -176,9 +277,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
                       gap: '0.75rem',
                       width: '100%',
                       padding: '0.625rem 0.875rem',
-                      background: lang === l.code ? '#eff6ff' : 'transparent',
+                      background: lang === l.code ? 'var(--primary-light)' : 'transparent',
                       border: 'none',
-                      color: lang === l.code ? '#1d4ed8' : '#475569',
+                      color: lang === l.code ? 'var(--primary)' : 'var(--text-secondary)',
                       fontSize: '0.85rem',
                       fontWeight: lang === l.code ? 600 : 400,
                       cursor: 'pointer',
@@ -200,12 +301,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
             width: 36,
             height: 36,
             borderRadius: '50%',
-            border: '1px solid #e2e8f0',
-            background: '#ffffff',
+            border: '1px solid var(--border)',
+            background: 'var(--surface)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#475569',
+            color: 'var(--text-secondary)',
             cursor: 'pointer',
             position: 'relative',
           }}
@@ -227,7 +328,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px solid #ffffff',
+              border: '2px solid var(--surface)',
             }}
           >
             3
@@ -241,21 +342,21 @@ export default function Header({ onMenuClick }: HeaderProps) {
               width: 36,
               height: 36,
               borderRadius: '50%',
-              background: '#1d4ed8',
+              background: 'var(--primary)',
               color: '#ffffff',
               fontWeight: 700,
               fontSize: '0.9rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 6px rgba(29, 78, 216, 0.3)',
+              boxShadow: '0 2px 6px rgba(37, 99, 235, 0.3)',
             }}
           >
             A
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.1 }}>Admin</span>
-            <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 1 }}>Administrator</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.1 }}>Admin</span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 1 }}>Administrator</span>
           </div>
         </div>
       </div>
