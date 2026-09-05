@@ -24,8 +24,10 @@ import {
   Lightbulb
 } from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [requirementText, setRequirementText] = useState(
     'Procure 500 stainless steel water storage tanks for government hospitals'
   );
@@ -68,7 +70,7 @@ export default function Dashboard() {
               }}
             >
               <Sparkles size={14} color="#1d4ed8" />
-              <span>AI-Powered Standards Intelligence</span>
+              <span>{t('aiStandardsIntel')}</span>
             </div>
 
             {/* Headline */}
@@ -82,9 +84,9 @@ export default function Dashboard() {
                 margin: '0 0 0.875rem 0',
               }}
             >
-              Find the Right <span style={{ color: '#1d4ed8' }}>Indian Standards</span>.
-              <br />
-              Build Better Tenders.
+              {t('heroTitlePart1')}
+              <span style={{ color: '#1d4ed8' }}>{t('indianStandards')}</span>
+              {t('heroTitlePart2')}
             </h1>
 
             {/* Subtitle */}
@@ -97,7 +99,7 @@ export default function Dashboard() {
                 margin: '0 0 1.5rem 0',
               }}
             >
-              AI-powered assistance for identifying applicable Indian Standards, related requirements, certifications, amendments, and tender specification gaps.
+              {t('heroSubtitle')}
             </p>
 
             {/* Procurement Requirement Box */}
@@ -111,12 +113,12 @@ export default function Dashboard() {
               }}
             >
               <div style={{ fontSize: '0.7875rem', color: '#64748b', marginBottom: '0.5rem', fontWeight: 500 }}>
-                Describe your procurement requirement in detail...
+                {t('describeProcurementDetail')}
               </div>
               <textarea
                 value={requirementText}
                 onChange={(e) => setRequirementText(e.target.value)}
-                placeholder='Example: "Procure 500 stainless steel water storage tanks for government hospitals"'
+                placeholder={t('procurementPlaceholder')}
                 style={{
                   width: '100%',
                   border: 'none',
@@ -159,7 +161,7 @@ export default function Dashboard() {
                     }}
                   >
                     <Upload size={14} color="#475569" />
-                    <span>Upload Tender Document</span>
+                    <span>{t('uploadTenderDoc')}</span>
                   </button>
                   <span style={{ padding: '0.2rem 0.5rem', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: '0.6875rem', fontWeight: 700, color: '#ef4444' }}>PDF</span>
                   <span style={{ padding: '0.2rem 0.5rem', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: '0.6875rem', fontWeight: 700, color: '#1d4ed8' }}>DOCX</span>
@@ -180,7 +182,7 @@ export default function Dashboard() {
                   }}
                 >
                   <Sparkles size={16} fill="#ffffff" />
-                  <span>Analyze Requirement</span>
+                  <span>{t('analyzeRequirement')}</span>
                   <ArrowRight size={16} />
                 </Link>
               </div>
@@ -321,12 +323,12 @@ export default function Dashboard() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div>
                 <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  STANDARDS INDEXED
+                  {t('standardsIndexed')}
                 </div>
                 <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.2rem 0 0.1rem 0' }}>
                   1,250+
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Across all sectors</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{t('acrossAllSectors')}</div>
               </div>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: '#eff6ff', border: '1px solid #bfdbfe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <BookOpen size={18} color="#1d4ed8" />
@@ -344,12 +346,12 @@ export default function Dashboard() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div>
                 <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  RELATIONSHIPS MAPPED
+                  {t('relationshipsMapped')}
                 </div>
                 <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.2rem 0 0.1rem 0' }}>
                   4,800+
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Standards interconnections</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{t('standardsInterconnections')}</div>
               </div>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: '#d1fae5', border: '1px solid #a7f3d0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <GitBranch size={18} color="#059669" />
@@ -366,12 +368,12 @@ export default function Dashboard() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div>
                 <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  TENDERS ANALYZED
+                  {t('tendersAnalyzed')}
                 </div>
                 <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.2rem 0 0.1rem 0' }}>
                   128
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>This month</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{t('thisMonth')}</div>
               </div>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: '#f3e8ff', border: '1px solid #e9d5ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <FileText size={18} color="#7c3aed" />
@@ -388,12 +390,12 @@ export default function Dashboard() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div>
                 <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  ISSUES DETECTED
+                  {t('issuesDetected')}
                 </div>
                 <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.2rem 0 0.1rem 0' }}>
                   347
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Potential spec gaps</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{t('potentialSpecGaps')}</div>
               </div>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: '#ffedd5', border: '1px solid #fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <AlertTriangle size={18} color="#ea580c" />
@@ -410,13 +412,13 @@ export default function Dashboard() {
         <div className="glass-card" style={{ padding: '1.5rem 1.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-              AI Analysis Pipeline
+              {t('aiAnalysisPipeline')}
             </h3>
             <Link
               href="/analyze"
               style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8125rem', color: '#1d4ed8', fontWeight: 600, textDecoration: 'none' }}
             >
-              <span>View Full Pipeline</span>
+              <span>{t('viewFullPipeline')}</span>
               <ExternalLink size={14} />
             </Link>
           </div>
@@ -433,16 +435,16 @@ export default function Dashboard() {
             }}
           >
             {[
-              { icon: Pencil, label: 'Input Requirement', sub: '' },
-              { icon: Brain, label: 'AI Analysis', sub: 'Understanding', active: true },
-              { icon: Box, label: 'Product ID', sub: 'Identification' },
-              { icon: ClipboardList, label: 'Req Extraction', sub: 'Key Parameters' },
-              { icon: BookOpen, label: 'Standards Matching', sub: 'AI Matching' },
-              { icon: GitBranch, label: 'Relationships', sub: 'Mapping' },
-              { icon: RotateCcw, label: 'Version Check', sub: 'Latest Versions' },
-              { icon: AlertTriangle, label: 'Gap Analysis', sub: 'Issue Detection' },
-              { icon: ShieldCheck, label: 'Certifications', sub: 'Validations' },
-              { icon: FileCheck, label: 'Spec Generation', sub: 'Output' },
+              { icon: Pencil, label: t('stepInputRequirement'), sub: '' },
+              { icon: Brain, label: t('stepAiAnalysis'), sub: t('stepUnderstanding'), active: true },
+              { icon: Box, label: t('stepProductId'), sub: t('stepIdentification') },
+              { icon: ClipboardList, label: t('stepReqExtraction'), sub: t('stepKeyParameters') },
+              { icon: BookOpen, label: t('stepStandardsMatching'), sub: t('stepAiMatching') },
+              { icon: GitBranch, label: t('stepRelationships'), sub: t('stepMapping') },
+              { icon: RotateCcw, label: t('stepVersionCheck'), sub: t('stepLatestVersions') },
+              { icon: AlertTriangle, label: t('stepGapAnalysis'), sub: t('stepIssueDetection') },
+              { icon: ShieldCheck, label: t('stepCertifications'), sub: t('stepValidations') },
+              { icon: FileCheck, label: t('stepSpecGeneration'), sub: t('stepOutput') },
             ].map((step, idx, arr) => {
               const StepIcon = step.icon;
               return (
@@ -487,18 +489,18 @@ export default function Dashboard() {
           <div className="glass-card" style={{ padding: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-                Recent Analyses
+                {t('recentAnalyses')}
               </h3>
               <Link href="/history" style={{ fontSize: '0.8125rem', color: '#1d4ed8', fontWeight: 600, textDecoration: 'none' }}>
-                View All
+                {t('viewAll')}
               </Link>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {[
-                { title: 'Water Tanks', time: 'Today, 10:24 AM', icon: Home },
-                { title: 'RCC Pipes', time: 'Yesterday', icon: Building2 },
-                { title: 'LED Street Light', time: 'Oct 12, 2023', icon: Lightbulb },
+                { title: t('itemWaterTanks'), time: t('timeToday'), icon: Home },
+                { title: t('itemRccPipes'), time: t('timeYesterday'), icon: Building2 },
+                { title: t('itemLedStreetLight'), time: 'Oct 12, 2023', icon: Lightbulb },
               ].map((item, i) => {
                 const ItemIcon = item.icon;
                 return (
@@ -534,7 +536,7 @@ export default function Dashboard() {
                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{item.time}</div>
                       </div>
                     </div>
-                    <span className="badge badge-green">✓ Completed</span>
+                    <span className="badge badge-green">✓ {t('completed')}</span>
                   </div>
                 );
               })}
@@ -545,10 +547,10 @@ export default function Dashboard() {
           <div className="glass-card" style={{ padding: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-                Top Standards by Usage
+                {t('topStandardsByUsage')}
               </h3>
               <Link href="/explorer" style={{ fontSize: '0.8125rem', color: '#1d4ed8', fontWeight: 600, textDecoration: 'none' }}>
-                Explore
+                {t('explore')}
               </Link>
             </div>
 
@@ -577,7 +579,7 @@ export default function Dashboard() {
           <div className="glass-card" style={{ padding: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-                Issue Summary
+                {t('issueSummary')}
               </h3>
             </div>
 
@@ -604,7 +606,7 @@ export default function Dashboard() {
                 >
                   <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', lineHeight: 1 }}>347</span>
                   <span style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: 2 }}>
-                    TOTAL ISSUES
+                    {t('totalIssues')}
                   </span>
                 </div>
               </div>
@@ -614,7 +616,7 @@ export default function Dashboard() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#334155', fontWeight: 500 }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} />
-                    <span>Missing</span>
+                    <span>{t('missing')}</span>
                   </div>
                   <span style={{ fontWeight: 700, color: '#0f172a' }}>138</span>
                 </div>
@@ -622,7 +624,7 @@ export default function Dashboard() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#334155', fontWeight: 500 }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6' }} />
-                    <span>Outdated</span>
+                    <span>{t('outdated')}</span>
                   </div>
                   <span style={{ fontWeight: 700, color: '#0f172a' }}>104</span>
                 </div>
@@ -630,7 +632,7 @@ export default function Dashboard() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#334155', fontWeight: 500 }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#a855f7' }} />
-                    <span>Ambiguous</span>
+                    <span>{t('ambiguous')}</span>
                   </div>
                   <span style={{ fontWeight: 700, color: '#0f172a' }}>69</span>
                 </div>
@@ -638,7 +640,7 @@ export default function Dashboard() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#334155', fontWeight: 500 }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
-                    <span>Cert Gaps</span>
+                    <span>{t('certGaps')}</span>
                   </div>
                   <span style={{ fontWeight: 700, color: '#0f172a' }}>36</span>
                 </div>
