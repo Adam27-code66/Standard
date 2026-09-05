@@ -521,7 +521,7 @@ const STORAGE_KEY = 'is-smart-language';
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<LangCode>('en');
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (Default: English 'en')
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY) as LangCode | null;
@@ -529,9 +529,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         setLangState(stored);
         document.documentElement.lang = stored;
       } else {
+        setLangState('en');
         document.documentElement.lang = 'en';
       }
     } catch {
+      setLangState('en');
       document.documentElement.lang = 'en';
     }
   }, []);
