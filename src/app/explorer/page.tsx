@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Eye } from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
 import { DEMO_STANDARDS, searchStandards } from '@/data/demoStandards';
 import { Standard } from '@/types';
+import { getBisStandardUrl } from '@/utils/bisUrl';
 
 const STATUS_OPTIONS = ['All', 'Current', 'Amended', 'Superseded'];
 const CATEGORY_OPTIONS = ['All', 'Main Product Standard', 'Testing Standard', 'Safety Standard', 'Installation Standard', 'Performance Standard', 'Material Standard'];
@@ -44,6 +45,18 @@ function StandardRow({ standard }: { standard: Standard }) {
             {standard.certificationRequired && <span className="badge badge-amber">BIS Cert Required</span>}
             <span className="badge badge-gray">Amendments: {standard.amendments}</span>
             <span className="badge badge-cyan">Demo KB</span>
+          </div>
+          <div style={{ marginTop: '0.75rem' }}>
+            <a
+              href={getBisStandardUrl(standard.standardNumber)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost"
+              style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}
+            >
+              <Eye size={13} />
+              View on BIS Portal
+            </a>
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@
 
 import { Recommendation } from '@/types';
 import { Eye, HelpCircle, Plus, CheckSquare, Square } from 'lucide-react';
+import { getBisStandardUrl } from '@/utils/bisUrl';
 
 const CATEGORY_CONFIG: Record<string, { color: string; badge: string }> = {
   'Main Product Standard': { color: '#3b82f6', badge: 'badge-blue' },
@@ -140,7 +141,7 @@ export default function StandardCard({ recommendation, selected, onSelect, onExp
               {selected ? 'Added to Spec' : 'Add to Specification'}
             </button>
             <a
-              href={`https://www.bis.gov.in/`}
+              href={getBisStandardUrl(standard.standardNumber)}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-ghost"

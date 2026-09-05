@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Recommendation, Standard } from '@/types';
+import { Eye } from 'lucide-react';
+import { Recommendation } from '@/types';
+import { getBisStandardUrl } from '@/utils/bisUrl';
 import { DEMO_RELATIONSHIPS } from '@/data/relationships';
 import { Info, ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
 
@@ -282,6 +284,18 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
                   <span className={`badge ${selected.status === 'Current' ? 'badge-green' : 'badge-amber'}`} style={{ fontSize: '0.6rem' }}>
                     {selected.status}
                   </span>
+                </div>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <a
+                    href={getBisStandardUrl(selected.standardNumber)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost"
+                    style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                  >
+                    <Eye size={12} />
+                    View on BIS
+                  </a>
                 </div>
               </div>
               <button
