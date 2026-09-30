@@ -36,6 +36,7 @@ export default function Sidebar() {
       items: [
         { href: '/explorer', icon: Search, label: t('standardsExplorer') || 'Standards Explorer' },
         { href: '/graph', icon: GitBranch, label: t('standardsGraph') || 'Standards Graph' },
+        { href: '/compare', icon: Search, label: 'Compare Standards' },
       ],
     },
     {

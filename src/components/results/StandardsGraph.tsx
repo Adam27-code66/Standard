@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Eye } from 'lucide-react';
-import { Recommendation } from '@/types';
+import { Eye, ZoomIn, ZoomOut, RefreshCw, Search, FileText } from 'lucide-react';
+import { Recommendation, Standard } from '@/types';
 import { getBisStandardUrl } from '@/utils/bisUrl';
 import { DEMO_RELATIONSHIPS } from '@/data/relationships';
-import { Info, ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
+import { DEMO_STANDARDS } from '@/data/demoStandards';
+import StandardProfileModal from '@/components/explorer/StandardProfileModal';
 
 interface Props {
   recommendations: Recommendation[];
@@ -57,13 +58,16 @@ interface LinkData {
 
 export default function StandardsGraph({ recommendations, mainStandardId }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const [selected, setSelected] = useState<NodeData | null>(null);
-  const [dimensions, setDimensions] = useState({ w: 700, h: 420 });
+  const [profileStandard, setProfileStandard] = useState<Standard | null>(null);
+  const [searchFilter, setSearchFilter] = useState('');
+  const [dimensions, setDimensions] = useState({ w: 700, h: 460 });
 
   useEffect(() => {
     const obs = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setDimensions({ w: entry.contentRect.width, h: Math.max(380, entry.contentRect.height) });
+        setDimensions({ w: entry.contentRect.width, h: Math.max(420, entry.contentRect.height) });
       }
     });
     if (svgRef.current?.parentElement) obs.observe(svgRef.current.parentElement);
@@ -78,8 +82,18 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
 
     const { w, h } = dimensions;
 
-    // Build nodes from recommendations
-    const nodes: NodeData[] = recommendations.map((r) => ({
+    // Filter recommendations by search filter if any
+    const filteredRecs = searchFilter
+      ? recommendations.filter(
+          (r) =>
+            r.standard.standardNumber.toLowerCase().includes(searchFilter.toLowerCase()) ||
+            r.standard.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
+            r.standard.category.toLowerCase().includes(searchFilter.toLowerCase())
+        )
+      : recommendations;
+
+    // Build nodes
+    const nodes: NodeData[] = filteredRecs.map((r) => ({
       id: r.standard.id,
       standardNumber: r.standard.standardNumber,
       title: r.standard.title,
@@ -100,10 +114,12 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
         label: rel.relationshipType.replace(/_/g, ' '),
       }));
 
-    // Zoom/pan
+    // Zoom/pan behavior
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.3, 3])
       .on('zoom', (event) => g.attr('transform', event.transform));
+    
+    zoomBehaviorRef.current = zoom;
     svg.call(zoom);
 
     const g = svg.append('g');
@@ -127,10 +143,10 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
 
     // Force simulation
     const simulation = d3.forceSimulation<NodeData>(nodes)
-      .force('link', d3.forceLink<NodeData, LinkData>(links).id((d) => d.id).distance(120).strength(0.5))
-      .force('charge', d3.forceManyBody().strength(-320))
+      .force('link', d3.forceLink<NodeData, LinkData>(links).id((d) => d.id).distance(130).strength(0.5))
+      .force('charge', d3.forceManyBody().strength(-350))
       .force('center', d3.forceCenter(w / 2, h / 2))
-      .force('collision', d3.forceCollide(40));
+      .force('collision', d3.forceCollide(42));
 
     // Links
     const link = g.append('g')
@@ -139,8 +155,8 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
       .enter()
       .append('line')
       .attr('stroke', (d) => REL_COLORS[d.type] || '#64748b')
-      .attr('stroke-opacity', 0.55)
-      .attr('stroke-width', 1.5)
+      .attr('stroke-opacity', 0.6)
+      .attr('stroke-width', 1.8)
       .attr('marker-end', (d) => `url(#arrow-${d.type})`);
 
     // Link labels
@@ -150,9 +166,10 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
       .enter()
       .append('text')
       .attr('font-size', 9)
-      .attr('fill', (d) => REL_COLORS[d.type] || '#64748b')
+      .attr('fill', (d) => REL_COLORS[d.type] || '#94a3b8')
       .attr('text-anchor', 'middle')
-      .attr('opacity', 0.7)
+      .attr('opacity', 0.8)
+      .attr('font-weight', 600)
       .text((d) => d.label);
 
     // Nodes
@@ -177,17 +194,18 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
       .on('click', (_, d) => setSelected(d));
 
     node.append('circle')
-      .attr('r', (d) => d.isMain ? 22 : 16)
-      .attr('fill', (d) => (CAT_COLORS[d.category] || '#64748b') + '22')
+      .attr('r', (d) => (d.isMain ? 24 : 18))
+      .attr('fill', (d) => (CAT_COLORS[d.category] || '#64748b') + '25')
       .attr('stroke', (d) => CAT_COLORS[d.category] || '#64748b')
-      .attr('stroke-width', (d) => d.isMain ? 2.5 : 1.5)
-      .attr('filter', (d) => d.isMain ? 'drop-shadow(0 0 6px rgba(59,130,246,0.6))' : 'none');
+      .attr('stroke-width', (d) => (d.isMain ? 3 : 2))
+      .attr('filter', (d) => (d.isMain ? 'drop-shadow(0 0 8px rgba(59,130,246,0.6))' : 'none'));
 
     node.append('text')
       .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
-      .attr('font-size', (d) => d.isMain ? 7.5 : 7)
-      .attr('fill', '#f0f6ff')
+      .attr('font-size', (d) => (d.isMain ? 8 : 7.5))
+      .attr('font-weight', 700)
+      .attr('fill', '#f8fafc')
       .attr('pointer-events', 'none')
       .text((d) => {
         const parts = d.standardNumber.split(' ');
@@ -197,9 +215,10 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
     // Category label below node
     node.append('text')
       .attr('text-anchor', 'middle')
-      .attr('dy', (d) => (d.isMain ? 35 : 28))
+      .attr('dy', (d) => (d.isMain ? 38 : 30))
       .attr('font-size', 7)
-      .attr('fill', (d) => CAT_COLORS[d.category] || '#64748b')
+      .attr('fill', (d) => CAT_COLORS[d.category] || '#cbd5e1')
+      .attr('font-weight', 600)
       .attr('pointer-events', 'none')
       .text((d) => {
         const parts = d.category.split(' ');
@@ -221,86 +240,147 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
     });
 
     return () => { simulation.stop(); };
-  }, [recommendations, mainStandardId, dimensions]);
+  }, [recommendations, mainStandardId, dimensions, searchFilter]);
 
-  // Legend
+  const handleZoomIn = () => {
+    if (svgRef.current && zoomBehaviorRef.current) {
+      d3.select(svgRef.current).transition().duration(300).call(zoomBehaviorRef.current.scaleBy, 1.3);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (svgRef.current && zoomBehaviorRef.current) {
+      d3.select(svgRef.current).transition().duration(300).call(zoomBehaviorRef.current.scaleBy, 0.7);
+    }
+  };
+
+  const handleResetZoom = () => {
+    if (svgRef.current && zoomBehaviorRef.current) {
+      d3.select(svgRef.current).transition().duration(300).call(zoomBehaviorRef.current.transform, d3.zoomIdentity);
+    }
+  };
+
+  const openProfile = (nodeId: string) => {
+    const std = DEMO_STANDARDS.find((s) => s.id === nodeId);
+    if (std) setProfileStandard(std);
+  };
+
   const legendItems = [
     { label: 'Normative Ref', color: REL_COLORS.NORMATIVE_REFERENCE },
     { label: 'Test Method', color: REL_COLORS.TEST_METHOD },
-    { label: 'Safety', color: REL_COLORS.SAFETY },
+    { label: 'Safety Code', color: REL_COLORS.SAFETY },
     { label: 'Installation', color: REL_COLORS.INSTALLATION },
     { label: 'Related Product', color: REL_COLORS.RELATED_PRODUCT },
   ];
 
   return (
     <div className="glass-card-bright" style={{ padding: '1.25rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
-          <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 0.125rem' }}>
-            Standards Relationship Map
+          <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0.125rem' }}>
+            Standards Relationship Graph
           </h2>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
-            Click nodes to inspect • Drag to reposition • Scroll to zoom
+            Click node to view profile • Drag to rearrange • Scroll or use controls to zoom & pan
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
-          {legendItems.map((item) => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-              <div style={{ width: 20, height: 2, background: item.color, borderRadius: 1 }} />
-              {item.label}
-            </div>
-          ))}
+
+        {/* Search & Zoom Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', width: 180 }}>
+            <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+            <input
+              type="text"
+              placeholder="Search graph nodes..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="input-field"
+              style={{ paddingLeft: '1.75rem', paddingRight: '0.5rem', height: 30, fontSize: '0.725rem' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 6, padding: 2 }}>
+            <button onClick={handleZoomIn} className="btn-ghost" style={{ padding: '0.25rem 0.5rem', height: 28 }} title="Zoom In">
+              <ZoomIn size={14} />
+            </button>
+            <button onClick={handleZoomOut} className="btn-ghost" style={{ padding: '0.25rem 0.5rem', height: 28 }} title="Zoom Out">
+              <ZoomOut size={14} />
+            </button>
+            <button onClick={handleResetZoom} className="btn-ghost" style={{ padding: '0.25rem 0.5rem', height: 28 }} title="Reset Zoom">
+              <RefreshCw size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div style={{ position: 'relative', background: 'var(--navy-800)', borderRadius: 10, overflow: 'hidden', height: dimensions.h }}>
+      {/* Legend Row */}
+      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.75rem', padding: '0.4rem 0.75rem', background: '#0f172a', borderRadius: 8 }}>
+        {legendItems.map((item) => (
+          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.6875rem', color: '#cbd5e1' }}>
+            <div style={{ width: 14, height: 3, background: item.color, borderRadius: 1.5 }} />
+            {item.label}
+          </div>
+        ))}
+      </div>
+
+      {/* SVG Canvas Area */}
+      <div style={{ position: 'relative', background: '#090d16', borderRadius: 10, overflow: 'hidden', height: dimensions.h }}>
         <svg ref={svgRef} width="100%" height="100%" style={{ display: 'block' }} />
 
-        {/* Selected node info */}
+        {/* Selected node info popover */}
         {selected && (
           <div
             style={{
               position: 'absolute',
-              bottom: 12,
-              left: 12,
-              background: 'rgba(13,27,46,0.95)',
-              border: '1px solid var(--border)',
-              borderRadius: 10,
-              padding: '0.875rem 1rem',
-              maxWidth: 280,
-              backdropFilter: 'blur(8px)',
+              bottom: 14,
+              left: 14,
+              background: 'rgba(15, 23, 42, 0.95)',
+              border: '1px solid #334155',
+              borderRadius: 12,
+              padding: '1rem',
+              maxWidth: 300,
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: CAT_COLORS[selected.category] || '#60a5fa', fontFamily: 'monospace', marginBottom: 2 }}>
+                <div style={{ fontSize: '0.725rem', fontWeight: 800, color: CAT_COLORS[selected.category] || '#60a5fa', fontFamily: 'monospace', marginBottom: 2 }}>
                   {selected.standardNumber}
                 </div>
-                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 4 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', lineHeight: 1.35, marginBottom: 6 }}>
                   {selected.title}
                 </div>
-                <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
-                  <span className="badge badge-blue" style={{ fontSize: '0.6rem' }}>{selected.category}</span>
-                  <span className={`badge ${selected.status === 'Current' ? 'badge-green' : 'badge-amber'}`} style={{ fontSize: '0.6rem' }}>
+                <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                  <span className="badge badge-blue" style={{ fontSize: '0.625rem' }}>{selected.category}</span>
+                  <span className={`badge ${selected.status === 'Current' ? 'badge-green' : 'badge-amber'}`} style={{ fontSize: '0.625rem' }}>
                     {selected.status}
                   </span>
                 </div>
-                <div style={{ marginTop: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
+                  <button
+                    className="btn-primary"
+                    onClick={() => openProfile(selected.id)}
+                    style={{ fontSize: '0.725rem', padding: '0.35rem 0.65rem', gap: '0.25rem' }}
+                  >
+                    <FileText size={12} />
+                    Open Profile
+                  </button>
                   <a
                     href={getBisStandardUrl(selected.standardNumber)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-ghost"
-                    style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                    style={{ fontSize: '0.725rem', padding: '0.35rem 0.65rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
                   >
                     <Eye size={12} />
-                    View on BIS
+                    BIS Portal
                   </a>
                 </div>
               </div>
               <button
                 onClick={() => setSelected(null)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, marginLeft: 8 }}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, marginLeft: 8, fontSize: '1.1rem' }}
               >
                 ×
               </button>
@@ -309,11 +389,19 @@ export default function StandardsGraph({ recommendations, mainStandardId }: Prop
         )}
 
         {recommendations.length === 0 && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>
             Run an analysis to view the standards relationship graph
           </div>
         )}
       </div>
+
+      {/* Standard Profile Modal Trigger */}
+      {profileStandard && (
+        <StandardProfileModal
+          standard={profileStandard}
+          onClose={() => setProfileStandard(null)}
+        />
+      )}
     </div>
   );
 }

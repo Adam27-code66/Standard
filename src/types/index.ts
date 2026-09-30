@@ -26,6 +26,13 @@ export type RelationshipType =
 
 export type IssueSeverity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
 
+export interface AmendmentDetail {
+  number: number;
+  year: number;
+  title: string;
+  summary?: string;
+}
+
 export interface Standard {
   id: string;
   standardNumber: string;
@@ -45,6 +52,29 @@ export interface Standard {
   keywords: string[];
   source: 'DEMO_KB'; // clearly marking demo data
   lastVerified: string;
+
+  // Extended SIH attributes
+  standardType?: string;
+  ics?: string;
+  department?: string;
+  committee?: string;
+  publicationDate?: string;
+  revisionDate?: string;
+  lastAmendmentDate?: string;
+  amendmentDetails?: AmendmentDetail[];
+  requirementsSummary?: string[];
+  testingRequirements?: string[];
+  certificationDetails?: {
+    mandatory: boolean;
+    scheme: string;
+    details: string;
+    sourceUrl?: string;
+  };
+  clauseEvidence?: {
+    clauseNumber: string;
+    clauseTitle: string;
+    snippet: string;
+  }[];
 }
 
 export interface StandardRelationship {

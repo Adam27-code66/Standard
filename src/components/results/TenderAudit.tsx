@@ -1,119 +1,236 @@
 'use client';
 
-import { TenderIssue } from '@/types';
-import { AlertTriangle, AlertCircle, Info, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
+import { TenderIssue } from '@/types';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, ChevronDown, ChevronUp, RotateCcw, HelpCircle, ShieldAlert, FileText, ArrowRight } from 'lucide-react';
 
 interface Props { issues: TenderIssue[]; }
 
 const SEVERITY_CONFIG = {
-  Critical: { color: '#ef4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.25)', icon: AlertCircle },
-  High: { color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', icon: AlertTriangle },
-  Medium: { color: '#f59e0b', bg: 'rgba(245,158,11,0.05)', border: 'rgba(245,158,11,0.2)', icon: AlertTriangle },
-  Low: { color: '#3b82f6', bg: 'rgba(59,130,246,0.05)', border: 'rgba(59,130,246,0.2)', icon: Info },
-  Info: { color: '#94a3b8', bg: 'rgba(100,116,139,0.05)', border: 'rgba(100,116,139,0.2)', icon: Info },
+  Critical: { color: '#ef4444', bg: '#fef2f2', border: '#fecdd3', icon: AlertCircle },
+  High: { color: '#dc2626', bg: '#fff1f2', border: '#fecdd3', icon: AlertTriangle },
+  Medium: { color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: AlertTriangle },
+  Low: { color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe', icon: Info },
+  Info: { color: '#64748b', bg: '#f8fafc', border: '#cbd5e1', icon: Info },
 };
 
-function IssueCard({ issue }: { issue: TenderIssue }) {
-  const [expanded, setExpanded] = useState(true);
-  const cfg = SEVERITY_CONFIG[issue.severity] || SEVERITY_CONFIG.Info;
-  const Icon = cfg.icon;
-
-  return (
-    <div style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, overflow: 'hidden' }}>
-      <button
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          padding: '0.875rem 1rem',
-          width: '100%',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          textAlign: 'left',
-        }}
-        onClick={() => setExpanded(!expanded)}
-      >
-        <Icon size={16} color={cfg.color} style={{ flexShrink: 0 }} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: '0.8375rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-            {issue.type}
-          </span>
-          <span
-            className={`badge badge-${issue.severity === 'Critical' || issue.severity === 'High' ? 'red' : issue.severity === 'Medium' ? 'amber' : 'blue'}`}
-            style={{ marginLeft: '0.5rem', fontSize: '0.6rem' }}
-          >
-            {issue.severity}
-          </span>
-        </div>
-        {expanded ? <ChevronUp size={14} color="var(--text-muted)" /> : <ChevronDown size={14} color="var(--text-muted)" />}
-      </button>
-
-      {expanded && (
-        <div style={{ padding: '0 1rem 1rem', borderTop: `1px solid ${cfg.border}` }}>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0.75rem 0 0.5rem' }}>
-            {issue.description}
-          </p>
-          {issue.detectedReference && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Detected reference:</span>
-              <code style={{ fontSize: '0.75rem', color: '#f59e0b', background: 'rgba(245,158,11,0.1)', padding: '0.1rem 0.4rem', borderRadius: 4 }}>
-                {issue.detectedReference}
-              </code>
-            </div>
-          )}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '0.5rem',
-              padding: '0.5rem 0.75rem',
-              background: 'rgba(16,185,129,0.06)',
-              border: '1px solid rgba(16,185,129,0.15)',
-              borderRadius: 8,
-              marginTop: '0.625rem',
-            }}
-          >
-            <CheckCircle size={13} color="#10b981" style={{ flexShrink: 0, marginTop: 2 }} />
-            <p style={{ fontSize: '0.775rem', color: '#34d399', margin: 0, lineHeight: 1.5 }}>
-              <strong>Recommended action:</strong> {issue.recommendedAction}
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function TenderAudit({ issues }: Props) {
-  if (issues.length === 0) {
-    return (
-      <div className="glass-card" style={{ padding: '2rem', textAlign: 'center' }}>
-        <CheckCircle size={32} color="#10b981" style={{ margin: '0 auto 0.75rem' }} />
-        <div style={{ fontSize: '0.9375rem', fontWeight: 600, color: '#10b981', marginBottom: '0.375rem' }}>
-          No Major Issues Detected
-        </div>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-          The identified standards appear to cover the key requirements. Review the full specification before finalizing.
-        </p>
-      </div>
-    );
-  }
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Group issues into the 4 SIH gap analysis categories
+  const missingCount = issues.filter(
+    (i) => i.type === 'Missing Test Standard' || i.type === 'Missing Safety Requirement' || i.type === 'Incomplete Specification'
+  ).length;
+
+  const outdatedCount = issues.filter((i) => i.type === 'Outdated Standard' || i.type === 'Version Conflict').length;
+
+  const ambiguousCount = issues.filter((i) => i.type === 'Incomplete Specification' || i.type === 'Missing Test Standard').length;
+
+  const certGapCount = issues.filter((i) => i.type === 'Missing Certification').length;
+
+  // Filter issues according to selected category card
+  const filteredIssues = selectedCategory
+    ? issues.filter((i) => {
+        if (selectedCategory === 'MISSING') return i.type === 'Missing Test Standard' || i.type === 'Missing Safety Requirement' || i.type === 'Incomplete Specification';
+        if (selectedCategory === 'OUTDATED') return i.type === 'Outdated Standard' || i.type === 'Version Conflict';
+        if (selectedCategory === 'AMBIGUOUS') return i.type === 'Incomplete Specification' || i.type === 'Missing Test Standard';
+        if (selectedCategory === 'CERTIFICATION') return i.type === 'Missing Certification';
+        return true;
+      })
+    : issues;
 
   return (
-    <div className="glass-card-bright" style={{ padding: '1.25rem' }}>
-      <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
-        Tender Compliance & Gap Analysis
-      </h2>
-      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-        {issues.length} issue{issues.length !== 1 ? 's' : ''} detected that may affect procurement quality.
+    <div className="glass-card-bright" style={{ padding: '1.5rem', borderRadius: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+          Tender Specification Gap Analysis
+        </h2>
+        {selectedCategory && (
+          <button
+            className="btn-ghost"
+            onClick={() => setSelectedCategory(null)}
+            style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+          >
+            Show All ({issues.length})
+          </button>
+        )}
+      </div>
+
+      <p style={{ fontSize: '0.8125rem', color: '#64748b', marginBottom: '1.25rem' }}>
+        Automated scan identifies missing standards, outdated editions, ambiguous requirements, and certification gaps. Click any card to inspect details.
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        {issues.map((issue) => (
-          <IssueCard key={issue.id} issue={issue} />
-        ))}
+      {/* ── 4 CLICKABLE GAP CATEGORY CARDS ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        {/* Card 1: Missing Requirements */}
+        <button
+          onClick={() => setSelectedCategory(selectedCategory === 'MISSING' ? null : 'MISSING')}
+          style={{
+            background: selectedCategory === 'MISSING' ? '#eff6ff' : '#ffffff',
+            border: `2px solid ${selectedCategory === 'MISSING' ? '#1d4ed8' : '#e2e8f0'}`,
+            borderRadius: 12,
+            padding: '1rem',
+            textAlign: 'left',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <AlertTriangle size={18} color="#dc2626" />
+            <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>{missingCount}</span>
+          </div>
+          <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            MISSING REQUIREMENTS
+          </div>
+          <div style={{ fontSize: '0.725rem', color: '#1d4ed8', marginTop: '0.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+            View Details <ArrowRight size={11} />
+          </div>
+        </button>
+
+        {/* Card 2: Outdated Standards */}
+        <button
+          onClick={() => setSelectedCategory(selectedCategory === 'OUTDATED' ? null : 'OUTDATED')}
+          style={{
+            background: selectedCategory === 'OUTDATED' ? '#eff6ff' : '#ffffff',
+            border: `2px solid ${selectedCategory === 'OUTDATED' ? '#1d4ed8' : '#e2e8f0'}`,
+            borderRadius: 12,
+            padding: '1rem',
+            textAlign: 'left',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <RotateCcw size={18} color="#d97706" />
+            <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>{outdatedCount}</span>
+          </div>
+          <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            OUTDATED STANDARDS
+          </div>
+          <div style={{ fontSize: '0.725rem', color: '#1d4ed8', marginTop: '0.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+            View Details <ArrowRight size={11} />
+          </div>
+        </button>
+
+        {/* Card 3: Ambiguous Requirements */}
+        <button
+          onClick={() => setSelectedCategory(selectedCategory === 'AMBIGUOUS' ? null : 'AMBIGUOUS')}
+          style={{
+            background: selectedCategory === 'AMBIGUOUS' ? '#eff6ff' : '#ffffff',
+            border: `2px solid ${selectedCategory === 'AMBIGUOUS' ? '#1d4ed8' : '#e2e8f0'}`,
+            borderRadius: 12,
+            padding: '1rem',
+            textAlign: 'left',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <HelpCircle size={18} color="#7c3aed" />
+            <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>{ambiguousCount}</span>
+          </div>
+          <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            AMBIGUOUS REQUIREMENTS
+          </div>
+          <div style={{ fontSize: '0.725rem', color: '#1d4ed8', marginTop: '0.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+            View Details <ArrowRight size={11} />
+          </div>
+        </button>
+
+        {/* Card 4: Certification Gaps */}
+        <button
+          onClick={() => setSelectedCategory(selectedCategory === 'CERTIFICATION' ? null : 'CERTIFICATION')}
+          style={{
+            background: selectedCategory === 'CERTIFICATION' ? '#eff6ff' : '#ffffff',
+            border: `2px solid ${selectedCategory === 'CERTIFICATION' ? '#1d4ed8' : '#e2e8f0'}`,
+            borderRadius: 12,
+            padding: '1rem',
+            textAlign: 'left',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <ShieldAlert size={18} color="#16a34a" />
+            <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>{certGapCount}</span>
+          </div>
+          <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            CERTIFICATION GAPS
+          </div>
+          <div style={{ fontSize: '0.725rem', color: '#1d4ed8', marginTop: '0.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+            View Details <ArrowRight size={11} />
+          </div>
+        </button>
+      </div>
+
+      {/* ── DETAILED ISSUES LIST ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+        {filteredIssues.map((issue) => {
+          const cfg = SEVERITY_CONFIG[issue.severity] || SEVERITY_CONFIG.Info;
+          const Icon = cfg.icon;
+
+          return (
+            <div
+              key={issue.id}
+              style={{
+                background: cfg.bg,
+                border: `1px solid ${cfg.border}`,
+                borderRadius: 12,
+                padding: '1.125rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.35rem' }}>
+                <Icon size={18} color={cfg.color} />
+                <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0f172a' }}>
+                  {issue.type}
+                </span>
+                <span
+                  className={`badge ${issue.severity === 'Critical' || issue.severity === 'High' ? 'badge-red' : issue.severity === 'Medium' ? 'badge-amber' : 'badge-blue'}`}
+                  style={{ fontSize: '0.65rem' }}
+                >
+                  {issue.severity} Severity
+                </span>
+              </div>
+
+              <p style={{ fontSize: '0.85rem', color: '#334155', margin: '0 0 0.625rem 0', lineHeight: 1.55 }}>
+                {issue.description}
+              </p>
+
+              {issue.detectedReference && (
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem' }}>
+                  Detected Reference: <strong style={{ color: '#d97706', fontFamily: 'monospace' }}>{issue.detectedReference}</strong>
+                </div>
+              )}
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  padding: '0.625rem 0.85rem',
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: 8,
+                }}
+              >
+                <CheckCircle size={15} color="#16a34a" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div style={{ fontSize: '0.8125rem', color: '#15803d', lineHeight: 1.5 }}>
+                  <strong>Recommended Action:</strong> {issue.recommendedAction}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {filteredIssues.length === 0 && (
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: 10, border: '1px dashed #cbd5e1' }}>
+            No issues found under this category filter.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -37,6 +37,7 @@ export default function Dashboard() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
         {/* ── 1. Hero Card ("AI-Powered Standards Intelligence") ── */}
         <div
+          className="hero-card-grid"
           style={{
             background: '#ffffff',
             border: '1px solid #e2e8f0',
@@ -44,10 +45,6 @@ export default function Dashboard() {
             padding: '2.25rem 2.5rem',
             position: 'relative',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
-            display: 'grid',
-            gridTemplateColumns: '1fr 300px',
-            gap: '2rem',
-            alignItems: 'center',
           }}
         >
           {/* Left Column Content */}
@@ -189,130 +186,32 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Right Column Visual (India Map Graphic with Network Ring) */}
+          {/* Right Column Visual (AI & Standards Compliance Workflow Illustration) */}
           <div
             style={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               position: 'relative',
-              height: 280,
+              width: '100%',
+              maxWidth: 340,
+              margin: '0 auto',
             }}
           >
-            {/* Orbital concentric rings */}
-            <div
+            <img
+              src="/images/hero-workflow.svg"
+              alt="Tender to Compliance AI Workflow Diagram: Tender Document -> AI Analysis -> Indian Standards -> Gap Analysis -> Compliance Report"
               style={{
-                position: 'absolute',
-                width: 240,
-                height: 240,
-                borderRadius: '50%',
-                border: '1px dashed #bfdbfe',
+                width: '100%',
+                height: 'auto',
+                maxHeight: 280,
+                objectFit: 'contain',
+                borderRadius: 16,
+                filter: 'drop-shadow(0 4px 12px rgba(29, 78, 216, 0.08))',
               }}
+              loading="eager"
             />
-            <div
-              style={{
-                position: 'absolute',
-                width: 180,
-                height: 180,
-                borderRadius: '50%',
-                border: '1px solid #dbeafe',
-                background: 'rgba(239, 246, 255, 0.4)',
-              }}
-            />
-
-            {/* Orbiting Icon Nodes */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 20,
-                right: 50,
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: '#ffffff',
-                border: '1px solid #bfdbfe',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-              }}
-            >
-              <FileText size={16} color="#1d4ed8" />
-            </div>
-
-            <div
-              style={{
-                position: 'absolute',
-                top: 70,
-                right: 15,
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                background: '#ffffff',
-                border: '1px solid #bfdbfe',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-              }}
-            >
-              <ShieldCheck size={16} color="#1d4ed8" />
-            </div>
-
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 50,
-                right: 35,
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: '#ffffff',
-                border: '1px solid #bfdbfe',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-              }}
-            >
-              <Building2 size={16} color="#1d4ed8" />
-            </div>
-
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 30,
-                left: 45,
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: '#ffffff',
-                border: '1px solid #bfdbfe',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-              }}
-            >
-              <GitBranch size={16} color="#1d4ed8" />
-            </div>
-
-            {/* Central Node Badge */}
-            <div
-              style={{
-                width: 68,
-                height: 68,
-                borderRadius: 20,
-                background: '#1d4ed8',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 8px 25px rgba(29, 78, 216, 0.4)',
-                zIndex: 2,
-              }}
-            >
-              <Box size={34} color="#ffffff" />
-            </div>
           </div>
         </div>
 

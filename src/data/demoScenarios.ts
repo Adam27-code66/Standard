@@ -2,6 +2,18 @@ import { DemoScenario } from '@/types';
 
 export const DEMO_SCENARIOS: DemoScenario[] = [
   {
+    id: 'scenario-tank',
+    name: 'Hospital SS Water Tank',
+    icon: '🏥',
+    description: 'Government hospital procurement — stainless steel water storage tank',
+    product: 'Stainless Steel Water Storage Tank',
+    purpose: 'Potable water storage for government hospital complex (500-bed unit)',
+    technicalRequirements:
+      'Capacity: 10,000 Liters\nMaterial: Grade 304 / 316 Stainless Steel\nApplication: Potable water storage in hospital\nNon-toxic internal lining & passivated welds\nPressure test: Hydrostatic test at 1.5x working pressure\nCorrosion resistance: High durability for chlorinated water\nBIS ISI certification mandatory',
+    environment: 'Hospital rooftop / Exposed to atmosphere / Continuous water supply',
+    industry: 'Healthcare',
+  },
+  {
     id: 'scenario-led',
     name: 'Outdoor LED Street Light',
     icon: '💡',

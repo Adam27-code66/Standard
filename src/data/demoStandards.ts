@@ -27,6 +27,31 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['LED', 'street light', 'road lighting', 'luminaire', 'outdoor', 'highway'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Product Specification',
+    ics: '29.140.40',
+    department: 'Electrotechnical',
+    committee: 'ETD 13',
+    publicationDate: '2023-01-15',
+    revisionDate: '2023-01-15',
+    lastAmendmentDate: '2024-06-20',
+    amendmentDetails: [
+      { number: 1, year: 2024, title: 'Amendment 1: Surge Protection Requirements', summary: 'Mandated 10kV surge protection for outdoor LED street luminaires on national highways.' }
+    ],
+    requirementsSummary: [
+      'Operating Voltage: 220-240V AC, 50 Hz',
+      'Ingress Protection: Minimum IP65',
+      'Impact Resistance: Minimum IK08',
+      'System Efficacy: > 120 lm/W'
+    ],
+    testingRequirements: ['IP65 dust/water ingress test', 'Photometric test', 'Surge immunity test'],
+    certificationDetails: {
+      mandatory: true,
+      scheme: 'BIS Product Certification (ISI Mark)',
+      details: 'Road and street lighting luminaires are covered under mandatory BIS ISI certification.'
+    },
+    clauseEvidence: [
+      { clauseNumber: 'Clause 5.2', clauseTitle: 'Ingress Protection Rating', snippet: 'Luminaires for highway lighting shall provide protection degree not less than IP65.' }
+    ]
   },
   {
     id: 'std-002',
@@ -44,6 +69,14 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['LED', 'luminaire', 'performance', 'efficacy', 'CCT', 'CRI'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Performance Specification',
+    ics: '29.140.99',
+    department: 'Electrotechnical',
+    committee: 'ETD 13',
+    publicationDate: '2022-03-10',
+    revisionDate: '2022-03-10',
+    requirementsSummary: ['Color Rendering Index (CRI) > 70', 'Correlated Color Temperature (CCT): 5000K - 6500K'],
+    testingRequirements: ['Lumen maintenance test (L70 > 50,000 hrs)', 'Color consistency test']
   },
   {
     id: 'std-003',
@@ -61,6 +94,16 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['luminaire', 'test', 'general requirements', 'safety test'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Test Method & Safety Code',
+    ics: '29.140.40',
+    department: 'Electrotechnical',
+    committee: 'ETD 13',
+    publicationDate: '2021-07-22',
+    revisionDate: '2021-07-22',
+    amendmentDetails: [
+      { number: 1, year: 2022, title: 'Amendment 1: Insulation Resistance', summary: 'Updated high voltage withstand limits.' },
+      { number: 2, year: 2023, title: 'Amendment 2: Thermal Stress Testing', summary: 'Added endurance test at elevated ambient temperature.' }
+    ]
   },
   {
     id: 'std-004',
@@ -79,6 +122,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['electrical safety', 'circuit breaker', 'high voltage', 'outdoor installation'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Safety Code',
+    ics: '29.120.50',
+    department: 'Electrotechnical',
+    committee: 'ETD 07'
   },
   {
     id: 'std-005',
@@ -96,6 +143,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['conduit', 'installation', 'electrical', 'outdoor', 'wiring'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Installation Standard',
+    ics: '29.120.10',
+    department: 'Electrotechnical',
+    committee: 'ETD 14'
   },
   {
     id: 'std-006',
@@ -113,6 +164,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['IP rating', 'enclosure', 'ingress protection', 'dust', 'water', 'weatherproof'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Test Method Code',
+    ics: '29.020',
+    department: 'Electrotechnical',
+    committee: 'ETD 18'
   },
   {
     id: 'std-007',
@@ -130,6 +185,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['photometric', 'luminous flux', 'intensity', 'test method', 'measurement'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Test Method',
+    ics: '29.140.40',
+    department: 'Electrotechnical',
+    committee: 'ETD 13'
   },
   {
     id: 'std-008',
@@ -147,6 +206,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['road lighting', 'highway', 'public', 'illumination', 'code of practice', 'design'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Code of Practice',
+    ics: '93.080.40',
+    department: 'Civil Engineering',
+    committee: 'CED 46'
   },
   // ── WATER PUMP ──────────────────────────────────────────────
   {
@@ -165,6 +228,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['pump', 'centrifugal', 'water pump', 'acceptance test', 'hydraulic', 'municipal'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Test Method Code',
+    ics: '23.080',
+    department: 'Mechanical Engineering',
+    committee: 'MED 03'
   },
   {
     id: 'std-010',
@@ -185,6 +252,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['centrifugal pump', 'water supply', 'horizontal', 'fresh water', 'municipal'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Product Specification',
+    ics: '23.080',
+    department: 'Mechanical Engineering',
+    committee: 'MED 03'
   },
   {
     id: 'std-011',
@@ -202,6 +273,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['rotodynamic', 'industrial pump', 'special purpose', 'high capacity'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Technical Requirements Specification',
+    ics: '23.080',
+    department: 'Mechanical Engineering',
+    committee: 'MED 03'
   },
   // ── CEMENT / CONSTRUCTION ───────────────────────────────────
   {
@@ -223,6 +298,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['cement', 'OPC', 'ordinary portland cement', 'construction', 'concrete'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Product Specification',
+    ics: '91.100.10',
+    department: 'Civil Engineering',
+    committee: 'CED 02'
   },
   {
     id: 'std-013',
@@ -240,6 +319,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['cement test', 'physical test', 'fineness', 'setting time', 'soundness'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Test Method Code',
+    ics: '91.100.10',
+    department: 'Civil Engineering',
+    committee: 'CED 02'
   },
   // ── ELECTRICAL (MCB) ────────────────────────────────────────
   {
@@ -261,6 +344,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['MCB', 'miniature circuit breaker', 'electrical', 'overcurrent', 'AC'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Product Specification',
+    ics: '29.120.50',
+    department: 'Electrotechnical',
+    committee: 'ETD 07'
   },
   // ── PPE (SAFETY HELMET) ─────────────────────────────────────
   {
@@ -282,6 +369,10 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['safety helmet', 'hard hat', 'PPE', 'industrial safety', 'construction', 'head protection'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'Product Specification',
+    ics: '13.340.20',
+    department: 'Textiles & Personal Safety',
+    committee: 'TXD 29'
   },
   {
     id: 'std-016',
@@ -299,7 +390,188 @@ export const DEMO_STANDARDS: Standard[] = [
     keywords: ['PPE', 'personal protective equipment', 'safety', 'industrial'],
     source: 'DEMO_KB',
     lastVerified: '2026-01-01',
+    standardType: 'General Requirements & Safety Code',
+    ics: '13.340.01',
+    department: 'Textiles & Personal Safety',
+    committee: 'TXD 29'
   },
+
+  // ── STAINLESS STEEL WATER TANKS / HEALTHCARE ────────────────
+  {
+    id: 'std-017',
+    standardNumber: 'IS 1553',
+    title: 'Stainless Steel Water Storage Tanks — Specification',
+    description: 'Specification for stainless steel water storage tanks for domestic, commercial, and hospital potable water storage.',
+    scope: 'Covers requirements for design, material, fabrication, and testing of Grade 304 and 316 stainless steel water storage tanks used in hospitals, residential, and commercial buildings.',
+    category: 'Main Product Standard',
+    industry: ['Healthcare', 'Water Supply', 'Infrastructure'],
+    version: '2024',
+    publicationYear: 2024,
+    status: 'Current',
+    amendments: 1,
+    previousVersion: '2014',
+    previousYear: 2014,
+    certificationRequired: true,
+    certificationBody: 'BIS',
+    keywords: ['stainless steel', 'water tank', 'storage tank', 'hospital', 'potable water', 'SS304', 'SS316'],
+    source: 'DEMO_KB',
+    lastVerified: '2026-01-01',
+    standardType: 'Product Specification',
+    ics: '23.020.10',
+    department: 'Civil Engineering',
+    committee: 'CED 46',
+    publicationDate: '2024-03-15',
+    revisionDate: '2024-03-15',
+    lastAmendmentDate: '2025-01-10',
+    amendmentDetails: [
+      { number: 1, year: 2025, title: 'Amendment 1: Stainless Steel Grade 316L inclusion for medical facilities', summary: 'Added explicit guidelines for SS316L grade steel in hospital water tanks.' }
+    ],
+    requirementsSummary: [
+      'Material must conform to SS Grade 304/316 as per IS 6911',
+      'Hygiene & non-toxic lining requirement for potable hospital water',
+      'Hydraulic pressure test at 1.5 times working pressure',
+      'Corrosion protection and passivated weld seams'
+    ],
+    testingRequirements: [
+      'Hydrostatic leakage test',
+      'Dye penetrant weld inspection',
+      'Potable water leaching test for heavy metals'
+    ],
+    certificationDetails: {
+      mandatory: true,
+      scheme: 'BIS Product Certification (ISI Mark)',
+      details: 'Stainless steel water tanks for public health institutions require mandatory ISI marking under Quality Control Orders.'
+    },
+    clauseEvidence: [
+      { clauseNumber: 'Clause 4.1', clauseTitle: 'Material Specification', snippet: 'All plates and sheets shall be stainless steel Grade 304 or 316 conforming to IS 6911.' },
+      { clauseNumber: 'Clause 6.3', clauseTitle: 'Sanitary Requirements for Healthcare Facilities', snippet: 'Tanks installed in hospital and healthcare environments shall have smooth passivated internal welds without crevice corrosion risks.' }
+    ]
+  },
+  {
+    id: 'std-018',
+    standardNumber: 'IS 10500',
+    title: 'Drinking Water — Specification',
+    description: 'Normative Indian Standard specifying physical, chemical, and bacteriological requirements for potable drinking water.',
+    scope: 'Prescribes requirements and methods of sampling and test for drinking water used in municipal and hospital supplies.',
+    category: 'Testing Standard',
+    industry: ['Healthcare', 'Water Supply'],
+    version: '2020',
+    publicationYear: 2020,
+    status: 'Current',
+    amendments: 2,
+    certificationRequired: false,
+    keywords: ['drinking water', 'potable water', 'water quality', 'hospital water', 'testing'],
+    source: 'DEMO_KB',
+    lastVerified: '2026-01-01',
+    standardType: 'Product & Quality Specification',
+    ics: '13.060.20',
+    department: 'Chemical Department',
+    committee: 'FAD 25',
+    publicationDate: '2020-05-10',
+    revisionDate: '2020-05-10',
+    lastAmendmentDate: '2023-11-01',
+    amendmentDetails: [
+      { number: 1, year: 2022, title: 'Amendment 1: Heavy Metal Permissible Limits', summary: 'Lowered lead and arsenic thresholds for hospital water systems.' },
+      { number: 2, year: 2023, title: 'Amendment 2: Micro-plastics and PFAS testing', summary: 'Guidelines for testing emerging contaminants.' }
+    ],
+    requirementsSummary: ['pH range 6.5 to 8.5', 'Total Dissolved Solids < 500 mg/L', 'Zero E. coli per 100 ml sample'],
+    testingRequirements: ['Bacteriological culture test', 'Spectrophotometric heavy metal assay'],
+    certificationDetails: {
+      mandatory: false,
+      scheme: 'NABL Laboratory Accreditation',
+      details: 'Water samples must be tested periodically at NABL accredited labs for compliance.'
+    },
+    clauseEvidence: [
+      { clauseNumber: 'Clause 3.2', clauseTitle: 'Organoleptic and Physical Parameters', snippet: 'Water shall be free from objectionable odor, taste, and color.' }
+    ]
+  },
+  {
+    id: 'std-019',
+    standardNumber: 'IS 5523',
+    title: 'Code of Practice for Hydraulic & Structural Design of Water Storage Tanks',
+    description: 'Design code for structural stability, pressure ratings, and support structures of elevated and ground water storage tanks.',
+    scope: 'Covers structural design load calculations, seismic resistance, wind loading, and hydraulic pressure parameters for water tanks.',
+    category: 'Installation Standard',
+    industry: ['Civil Engineering', 'Healthcare', 'Infrastructure'],
+    version: '2021',
+    publicationYear: 2021,
+    status: 'Current',
+    amendments: 0,
+    certificationRequired: false,
+    keywords: ['storage tank design', 'structural design', 'hydraulic pressure', 'tank installation', 'water storage'],
+    source: 'DEMO_KB',
+    lastVerified: '2026-01-01',
+    standardType: 'Code of Practice',
+    ics: '91.140.60',
+    department: 'Civil Engineering',
+    committee: 'CED 46',
+    publicationDate: '2021-08-20',
+    revisionDate: '2021-08-20',
+    requirementsSummary: ['Seismic zone structural factor calculation', 'Minimum 1.5 safety factor for uplift and wind loads'],
+    testingRequirements: ['Structural deflection test', 'Anchor bolt pull-out test'],
+    certificationDetails: {
+      mandatory: false,
+      scheme: 'Structural Engineer Certification',
+      details: 'Installation design must be certified by a registered chartered structural engineer.'
+    }
+  },
+  {
+    id: 'std-020',
+    standardNumber: 'IS 2062',
+    title: 'Hot Rolled Medium and High Tensile Structural Steel — Specification',
+    description: 'Specification for structural steel plates, sections, and flats used in structural fabrications and tank supports.',
+    scope: 'Covers steel grades, chemical composition, tensile properties, and impact testing for structural steel components.',
+    category: 'Material Standard',
+    industry: ['Construction', 'Industrial', 'Infrastructure'],
+    version: '2018',
+    publicationYear: 2018,
+    status: 'Current',
+    amendments: 1,
+    previousVersion: '2011',
+    previousYear: 2011,
+    certificationRequired: true,
+    certificationBody: 'BIS',
+    keywords: ['structural steel', 'tensile steel', 'steel plate', 'tank support', 'IS2062', 'E250'],
+    source: 'DEMO_KB',
+    lastVerified: '2026-01-01',
+    standardType: 'Material Specification',
+    ics: '77.140.20',
+    department: 'Metallurgical Engineering',
+    committee: 'MTD 04',
+    publicationDate: '2018-02-12',
+    revisionDate: '2018-02-12',
+    certificationDetails: {
+      mandatory: true,
+      scheme: 'BIS ISI Mark',
+      details: 'Steel plates and structural sections must carry BIS ISI marking.'
+    }
+  },
+  {
+    id: 'std-021',
+    standardNumber: 'IS 1172',
+    title: 'Code of Basic Requirements for Water Supply, Drainage and Sanitation',
+    description: 'Code specifying water consumption norms, storage capacity requirements, and sanitary plumbing for buildings including hospitals.',
+    scope: 'Basic water demand guidelines (Liters per capita per day) for hospitals, public buildings, and residential complexes.',
+    category: 'Terminology Standard',
+    industry: ['Healthcare', 'Municipal', 'Infrastructure'],
+    version: '2022',
+    publicationYear: 2022,
+    status: 'Current',
+    amendments: 0,
+    certificationRequired: false,
+    keywords: ['water supply requirement', 'sanitation', 'hospital water demand', 'LPCD', 'plumbing code'],
+    source: 'DEMO_KB',
+    lastVerified: '2026-01-01',
+    standardType: 'Code of Practice',
+    ics: '91.140.60',
+    department: 'Civil Engineering',
+    committee: 'CED 24',
+    publicationDate: '2022-04-18',
+    revisionDate: '2022-04-18',
+    clauseEvidence: [
+      { clauseNumber: 'Table 1, Item 4', clauseTitle: 'Hospital Water Requirements', snippet: 'For hospitals up to 100 beds: 450 Liters per bed per day storage capacity mandatory.' }
+    ]
+  }
 ];
 
 export function getStandardById(id: string): Standard | undefined {
@@ -313,6 +585,8 @@ export function searchStandards(query: string): Standard[] {
       s.title.toLowerCase().includes(q) ||
       s.standardNumber.toLowerCase().includes(q) ||
       s.keywords.some((k) => k.toLowerCase().includes(q)) ||
-      s.description.toLowerCase().includes(q)
+      s.description.toLowerCase().includes(q) ||
+      (s.department && s.department.toLowerCase().includes(q)) ||
+      (s.ics && s.ics.toLowerCase().includes(q))
   );
 }

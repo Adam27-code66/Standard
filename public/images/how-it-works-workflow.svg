@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 120" fill="none" width="100%" height="100%">
+  <defs>
+    <linearGradient id="step-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+    <linearGradient id="active-step-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eff6ff" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+  </defs>
+
+  <!-- Connecting line behind steps -->
+  <line x1="70" y1="45" x2="830" y2="45" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 4" />
+
+  <!-- Step 1: Upload / Enter Requirement -->
+  <g transform="translate(10, 10)">
+    <rect width="130" height="95" rx="12" fill="url(#step-bg)" stroke="#cbd5e1" stroke-width="1.5" />
+    <circle cx="75" cy="35" r="18" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.5" />
+    <!-- Upload Icon -->
+    <path d="M 75 42 V 30 M 70 33 L 75 28 L 80 33" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <text x="75" y="68" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#1e293b" text-anchor="middle">1. Upload / Enter</text>
+    <text x="75" y="80" font-family="Inter, sans-serif" font-size="8" font-weight="500" fill="#64748b" text-anchor="middle">Requirement</text>
+  </g>
+
+  <!-- Step 2: AI Requirement Extraction -->
+  <g transform="translate(160, 10)">
+    <rect width="130" height="95" rx="12" fill="url(#active-step-bg)" stroke="#3b82f6" stroke-width="2" />
+    <circle cx="225" cy="35" r="18" fill="#1d4ed8" />
+    <!-- AI Sparkle Icon -->
+    <path d="M 225 28 L 226.5 33 L 231.5 34.5 L 226.5 36 L 225 41 L 223.5 36 L 218.5 34.5 L 223.5 33 Z" fill="#ffffff" />
+    <text x="225" y="68" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#1d4ed8" text-anchor="middle">2. AI Requirement</text>
+    <text x="225" y="80" font-family="Inter, sans-serif" font-size="8" font-weight="600" fill="#2563eb" text-anchor="middle">Extraction</text>
+  </g>
+
+  <!-- Step 3: Standards Matching -->
+  <g transform="translate(310, 10)">
+    <rect width="130" height="95" rx="12" fill="url(#step-bg)" stroke="#cbd5e1" stroke-width="1.5" />
+    <circle cx="375" cy="35" r="18" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5" />
+    <!-- Book/Standards Icon -->
+    <path d="M 368 29 C 370 27, 373 27, 375 28.5 C 377 27, 380 27, 382 29 V 40 C 380 38.5, 377 38.5, 375 40 C 373 38.5, 370 38.5, 368 40 Z" fill="none" stroke="#7c3aed" stroke-width="1.5" />
+    <text x="375" y="68" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#1e293b" text-anchor="middle">3. Standards</text>
+    <text x="375" y="80" font-family="Inter, sans-serif" font-size="8" font-weight="500" fill="#64748b" text-anchor="middle">Matching</text>
+  </g>
+
+  <!-- Step 4: Version & Amendment Check -->
+  <g transform="translate(460, 10)">
+    <rect width="130" height="95" rx="12" fill="url(#step-bg)" stroke="#cbd5e1" stroke-width="1.5" />
+    <circle cx="525" cy="35" r="18" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5" />
+    <!-- Clock / Version Icon -->
+    <circle cx="525" cy="35" r="9" fill="none" stroke="#0284c7" stroke-width="1.5" />
+    <path d="M 525 30 V 35 L 529 37" stroke="#0284c7" stroke-width="1.5" stroke-linecap="round" />
+    <text x="525" y="68" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#1e293b" text-anchor="middle">4. Version &amp;</text>
+    <text x="525" y="80" font-family="Inter, sans-serif" font-size="8" font-weight="500" fill="#64748b" text-anchor="middle">Amendment Check</text>
+  </g>
+
+  <!-- Step 5: Gap Analysis -->
+  <g transform="translate(610, 10)">
+    <rect width="130" height="95" rx="12" fill="url(#step-bg)" stroke="#fed7aa" stroke-width="1.5" />
+    <circle cx="675" cy="35" r="18" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5" />
+    <!-- Warning/Audit Icon -->
+    <path d="M 675 27 L 685 42 H 665 Z" fill="none" stroke="#ea580c" stroke-width="1.5" stroke-linejoin="round" />
+    <circle cx="675" cy="38" r="1" fill="#ea580c" />
+    <line x1="675" y1="32" x2="675" y2="35" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round" />
+    <text x="675" y="68" font-family="Inter, sans-serif" font-size="9" font-weight="700" fill="#1e293b" text-anchor="middle">5. Gap Analysis</text>
+    <text x="675" y="80" font-family="Inter, sans-serif" font-size="8" font-weight="500" fill="#64748b" text-anchor="middle">Detection</text>
+  </g>
+
+  <!-- Step 6: Compliance Result -->
+  <g transform="translate(760, 10)">
+    <rect width="130" height="95" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="1.5" />
+    <circle cx="825" cy="35" r="18" fill="#10b981" />
+    <!-- Check Shield Icon -->
+    <path d="M 820 35 L 823.5 38.5 L 830 32" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <text x="825" y="68" font-family="Inter, sans-serif" font-size="9" font-weight="800" fill="#047857" text-anchor="middle">6. Compliance</text>
+    <text x="825" y="80" font-family="Inter, sans-serif" font-size="8" font-weight="700" fill="#065f46" text-anchor="middle">Result Report</text>
+  </g>
+</svg>

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 280" fill="none" width="100%" height="100%">
+  <defs>
+    <!-- Outer Glow Filter -->
+    <filter id="center-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <linearGradient id="cube-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Concentric Orbital Circles -->
+  <circle cx="160" cy="140" r="115" stroke="#dbeafe" stroke-width="1.5" stroke-dasharray="4 4" fill="none" />
+  <circle cx="160" cy="140" r="80" stroke="#eff6ff" stroke-width="2" fill="none" />
+
+  <!-- Central Glowing Blue Cube Icon Box -->
+  <g transform="translate(130, 110)">
+    <!-- Soft Background Blue Glow -->
+    <circle cx="30" cy="30" r="42" fill="#dbeafe" opacity="0.5" filter="url(#center-glow)" />
+    <!-- Blue Rounded Box Container -->
+    <rect x="0" y="0" width="60" height="60" rx="16" fill="url(#cube-grad)" />
+    <!-- 3D Box / Cube Icon -->
+    <path d="M 30 16 L 46 24 V 38 L 30 46 L 14 38 V 24 Z" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+    <path d="M 30 16 V 32 L 46 24" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+    <path d="M 30 32 L 14 24" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+  </g>
+
+  <!-- Orbital Node 1: Top Right (Document) -->
+  <g transform="translate(252, 60)">
+    <circle cx="14" cy="14" r="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    <!-- Doc Icon -->
+    <path d="M 10 9 H 16 L 19 12 V 19 C 19 20 18 21 17 21 H 10 C 9 21 8 20 8 19 V 11 C 8 10 9 9 10 9 Z" fill="none" stroke="#2563eb" stroke-width="1.5" />
+    <line x1="11" y1="14" x2="16" y2="14" stroke="#2563eb" stroke-width="1.5" />
+    <line x1="11" y1="17" x2="14" y2="17" stroke="#2563eb" stroke-width="1.5" />
+  </g>
+
+  <!-- Orbital Node 2: Mid Right (Shield) -->
+  <g transform="translate(268, 120)">
+    <circle cx="14" cy="14" r="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    <!-- Shield Icon -->
+    <path d="M 14 8 L 20 10.5 V 15 C 20 18.5 17.5 21 14 22 C 10.5 21 8 18.5 8 15 V 10.5 Z" fill="none" stroke="#2563eb" stroke-width="1.5" />
+    <path d="M 11.5 14.5 L 13.5 16.5 L 16.5 13" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+  <!-- Orbital Node 3: Bottom Right (File Check) -->
+  <g transform="translate(254, 185)">
+    <circle cx="14" cy="14" r="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    <!-- Document Fold Icon -->
+    <path d="M 10 9 H 15 L 18 12 V 19 C 18 20 17 20.5 16 20.5 H 10 C 9 20.5 8 20 8 19 V 10.5 C 8 9.5 9 9 10 9 Z" fill="none" stroke="#2563eb" stroke-width="1.5" />
+  </g>
+
+  <!-- Orbital Node 4: Lower Left (Network Node) -->
+  <g transform="translate(48, 195)">
+    <circle cx="14" cy="14" r="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    <!-- GitBranch / Node Icon -->
+    <circle cx="11" cy="11" r="2" stroke="#2563eb" stroke-width="1.5" fill="#ffffff" />
+    <circle cx="17" cy="17" r="2" stroke="#2563eb" stroke-width="1.5" fill="#ffffff" />
+    <path d="M 11 13 V 17 H 15" stroke="#2563eb" stroke-width="1.5" fill="none" />
+  </g>
+</svg>

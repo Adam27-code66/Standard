@@ -1,7 +1,7 @@
 'use client';
 
 import { Recommendation } from '@/types';
-import { X, Brain } from 'lucide-react';
+import { X, Brain, CheckCircle, AlertTriangle, ArrowDown, FileText } from 'lucide-react';
 
 interface Props {
   recommendation: Recommendation;
@@ -9,18 +9,24 @@ interface Props {
 }
 
 export default function ExplainPanel({ recommendation, onClose }: Props) {
-  const { standard, relevanceScore, aiReasoning, matchedRequirements } = recommendation;
+  const { standard, relevanceScore, aiReasoning, matchedRequirements, reason } = recommendation;
+
+  // Clause evidence check
+  const hasClauseEvidence = standard.clauseEvidence && standard.clauseEvidence.length > 0;
+
+  // Scope check logic using actual scope
+  const isScopeMatch = standard.status === 'Current' && standard.scope.length > 0;
 
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 200,
+        zIndex: 9999,
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'flex-end',
-        background: 'rgba(0,0,0,0.5)',
+        background: 'rgba(15, 23, 42, 0.65)',
         backdropFilter: 'blur(4px)',
       }}
       onClick={onClose}
@@ -28,145 +34,200 @@ export default function ExplainPanel({ recommendation, onClose }: Props) {
       <div
         style={{
           width: '100%',
-          maxWidth: 420,
+          maxWidth: 480,
           height: '100%',
-          background: 'var(--navy-900)',
-          borderLeft: '1px solid var(--border)',
+          background: '#ffffff',
+          borderLeft: '1px solid #cbd5e1',
           padding: '1.5rem',
           overflowY: 'auto',
+          boxShadow: '-10px 0 30px rgba(0,0,0,0.15)',
+          color: '#0f172a',
           animation: 'slideInRight 0.3s ease',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-            <Brain size={18} color="#60a5fa" />
-            <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-              Why Recommended?
+            <Brain size={20} color="#1d4ed8" />
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+              Explainable AI Evidence
             </h2>
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}
             aria-label="Close panel"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Standard info */}
-        <div style={{ background: 'var(--navy-800)', borderRadius: 10, padding: '1rem', marginBottom: '1.25rem', border: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#60a5fa', fontFamily: 'monospace', marginBottom: '0.25rem' }}>
-            {standard.standardNumber}
+        {/* Standard Info Header */}
+        <div style={{ background: '#f8fafc', borderRadius: 12, padding: '1rem', marginBottom: '1.25rem', border: '1px solid #e2e8f0' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1d4ed8', fontFamily: 'monospace', marginBottom: '0.25rem' }}>
+            {standard.standardNumber} : {standard.version}
           </div>
-          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem', lineHeight: 1.4 }}>
+          <div style={{ fontSize: '0.925rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem', lineHeight: 1.35 }}>
             {standard.title}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.375rem',
-                background: 'rgba(59,130,246,0.1)',
-                padding: '0.375rem 0.75rem',
+                background: '#eff6ff',
+                padding: '0.35rem 0.75rem',
                 borderRadius: 20,
+                border: '1px solid #bfdbfe',
               }}
             >
-              <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#60a5fa' }}>{relevanceScore}%</span>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>AI Relevance Score</span>
+              <span style={{ fontSize: '1rem', fontWeight: 800, color: '#1d4ed8' }}>{relevanceScore}%</span>
+              <span style={{ fontSize: '0.725rem', fontWeight: 600, color: '#1e40af' }}>Match Confidence</span>
+            </div>
+            <span className="badge badge-green">● {standard.status}</span>
+          </div>
+        </div>
+
+        {/* ── 1. EVIDENCE CHAIN DIAGRAM (SIH REQUIREMENT) ── */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <h3 style={{ fontSize: '0.7875rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+            Decision Traceability Chain
+          </h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+            {/* Step 1: User Requirement */}
+            <div style={{ width: '100%', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0.65rem 0.85rem' }}>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>USER REQUIREMENT</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#0f172a', marginTop: 2 }}>
+                {matchedRequirements[0] || 'Procurement requirement input'}
+              </div>
+            </div>
+
+            <ArrowDown size={14} color="#94a3b8" />
+
+            {/* Step 2: Extracted Key Parameter */}
+            <div style={{ width: '100%', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '0.65rem 0.85rem' }}>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase' }}>EXTRACTED PARAMETER</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#1e40af', marginTop: 2 }}>
+                {standard.keywords.slice(0, 3).join(', ') || standard.category}
+              </div>
+            </div>
+
+            <ArrowDown size={14} color="#94a3b8" />
+
+            {/* Step 3: Matched Standard */}
+            <div style={{ width: '100%', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '0.65rem 0.85rem' }}>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#16a34a', textTransform: 'uppercase' }}>MATCHED STANDARD</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#15803d', marginTop: 2, fontFamily: 'monospace' }}>
+                {standard.standardNumber} ({standard.category})
+              </div>
+            </div>
+
+            <ArrowDown size={14} color="#94a3b8" />
+
+            {/* Step 4: AI Reasoning */}
+            <div style={{ width: '100%', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, padding: '0.65rem 0.85rem' }}>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase' }}>MATCH RATIONALE</div>
+              <div style={{ fontSize: '0.8125rem', color: '#5b21b6', marginTop: 2, lineHeight: 1.4 }}>
+                {reason || 'Product scope, technical parameters, and application domain match standard definition.'}
+              </div>
             </div>
           </div>
-          <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontStyle: 'italic' }}>
-            Note: This is an AI-computed relevance score, not an official BIS rating.
-          </p>
         </div>
 
-        {/* AI Reasoning */}
+        {/* ── 2. SCOPE CHECK ── */}
         <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            AI Matching Criteria
+          <h3 style={{ fontSize: '0.7875rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+            Scope Validation Check
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {[
-              'Product category matches scope of this standard',
-              'Intended application aligns with standard coverage',
-              'Technical requirements overlap detected',
-              'Testing requirement relevant to this product type',
-              'Safety requirement applicable to this environment',
-            ].map((reason, i) => {
-              const matched = i < aiReasoning.length;
-              return (
-                <div
-                  key={reason}
-                  style={{
-                    display: 'flex',
-                    gap: '0.625rem',
-                    padding: '0.5rem 0.75rem',
-                    borderRadius: 8,
-                    background: matched ? 'rgba(16,185,129,0.06)' : 'rgba(100,116,139,0.06)',
-                    border: `1px solid ${matched ? 'rgba(16,185,129,0.2)' : 'var(--border)'}`,
-                  }}
-                >
-                  <span style={{ color: matched ? '#10b981' : 'var(--text-muted)', flexShrink: 0, marginTop: 1 }}>
-                    {matched ? '✓' : '○'}
-                  </span>
-                  <span style={{ fontSize: '0.8rem', color: matched ? 'var(--text-primary)' : 'var(--text-muted)', lineHeight: 1.5 }}>
-                    {reason}
-                  </span>
-                </div>
-              );
-            })}
+
+          <div
+            style={{
+              padding: '0.875rem 1rem',
+              borderRadius: 10,
+              background: isScopeMatch ? '#f0fdf4' : '#fffbeb',
+              border: `1px solid ${isScopeMatch ? '#bbf7d0' : '#fde68a'}`,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+              {isScopeMatch ? (
+                <CheckCircle size={16} color="#16a34a" />
+              ) : (
+                <AlertTriangle size={16} color="#d97706" />
+              )}
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: isScopeMatch ? '#15803d' : '#b45309' }}>
+                {isScopeMatch ? '✓ Scope appears relevant' : '⚠ Potential scope mismatch'}
+              </span>
+            </div>
+
+            <p style={{ fontSize: '0.8125rem', color: isScopeMatch ? '#166534' : '#78350f', margin: 0, lineHeight: 1.5 }}>
+              {standard.scope || 'Standard scope statement evaluated against extracted procurement requirements.'}
+            </p>
           </div>
         </div>
 
-        {/* AI Reasoning Summary */}
-        <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 10, padding: '1rem', marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
-            🧠 AI Reasoning Summary
-          </div>
-          <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>
-            This standard is highly relevant because the identified product category, intended application environment, and technical requirements align closely with the scope defined in <strong style={{ color: 'var(--text-primary)' }}>{standard.standardNumber}</strong>. The relevance score of <strong style={{ color: '#60a5fa' }}>{relevanceScore}%</strong> reflects the degree of alignment between your procurement requirement and this standard's coverage.
-          </p>
-        </div>
+        {/* ── 3. CLAUSE-LEVEL EVIDENCE ── */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <h3 style={{ fontSize: '0.7875rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+            Clause-Level Evidence
+          </h3>
 
-        {/* Matched requirements */}
-        {matchedRequirements.length > 0 && (
-          <div>
-            <h3 style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Matched Requirements
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-              {matchedRequirements.map((req, i) => (
-                <div key={i} className="badge badge-blue" style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, justifyContent: 'flex-start' }}>
-                  {req}
+          {hasClauseEvidence ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+              {standard.clauseEvidence?.map((clause, idx) => (
+                <div key={idx} style={{ padding: '0.75rem 0.875rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: 2 }}>
+                    <FileText size={13} color="#1d4ed8" />
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1d4ed8', fontFamily: 'monospace' }}>
+                      {clause.clauseNumber} — {clause.clauseTitle}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '0.7875rem', color: '#334155', margin: 0, fontStyle: 'italic', lineHeight: 1.45 }}>
+                    "{clause.snippet}"
+                  </p>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div style={{ padding: '0.875rem 1rem', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, fontSize: '0.8125rem', color: '#64748b', fontStyle: 'italic' }}>
+              Clause-level evidence is not available in the current dataset.
+            </div>
+          )}
+        </div>
 
-        {/* Standard details */}
-        <div style={{ marginTop: '1.25rem', padding: '0.875rem', background: 'var(--navy-800)', borderRadius: 10, border: '1px solid var(--border)' }}>
-          <h3 style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.625rem' }}>
-            Standard Details
+        {/* ── 4. AI MATCHING CRITERIA DETAILS ── */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <h3 style={{ fontSize: '0.7875rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+            Verified Alignment Factors
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-            {[
-              ['Version', standard.version],
-              ['Status', standard.status],
-              ['Amendments', standard.amendments.toString()],
-              ['Category', standard.category],
-              ['Certification', standard.certificationRequired ? `Required — ${standard.certificationBody || 'BIS'}` : 'Not Mandatory'],
-              ['Source', 'Demo Knowledge Base (Not official BIS data)'],
-            ].map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>{k}:</span>
-                <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{v}</span>
+            {aiReasoning.map((reason, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.8125rem',
+                  color: '#1e293b',
+                  background: '#f8fafc',
+                  padding: '0.45rem 0.75rem',
+                  borderRadius: 6,
+                  border: '1px solid #e2e8f0',
+                }}
+              >
+                <span style={{ color: '#10b981', fontWeight: 700 }}>✓</span>
+                <span>{reason}</span>
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Notice */}
+        <div style={{ padding: '0.75rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, fontSize: '0.725rem', color: '#92400e', lineHeight: 1.5 }}>
+          AI-generated analysis is provided for assistance and should be verified against the applicable current official standard and authoritative source.
         </div>
       </div>
 

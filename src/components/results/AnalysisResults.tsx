@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AnalysisResult } from '@/types';
+import { AnalysisResult, Recommendation } from '@/types';
 import { ArrowLeft, Download, Plus, AlertTriangle } from 'lucide-react';
 import RequirementSummary from './RequirementSummary';
 import StandardCard from './StandardCard';
@@ -11,8 +11,8 @@ import VersionChecker from './VersionChecker';
 import TenderAudit from './TenderAudit';
 import ReadinessScore from './ReadinessScore';
 import CertificationChecker from './CertificationChecker';
+import BeforeAfterView from './BeforeAfterView';
 import SpecificationModal from '../specification/SpecificationModal';
-import { Recommendation } from '@/types';
 
 interface Props {
   result: AnalysisResult;
@@ -21,6 +21,7 @@ interface Props {
 
 const SECTION_TABS = [
   { id: 'standards', label: '📋 Recommended Standards' },
+  { id: 'transform', label: '🔄 Before & After View' },
   { id: 'graph', label: '🔗 Relationship Graph' },
   { id: 'versions', label: '🕒 Version Check' },
   { id: 'audit', label: '⚠️ Gap Analysis' },
@@ -65,7 +66,7 @@ export default function AnalysisResults({ result, onNewAnalysis }: Props) {
             onClick={() => setShowSpec(true)}
           >
             <Download size={14} />
-            Export
+            Export Final Report
           </button>
         </div>
       </div>
@@ -181,6 +182,14 @@ export default function AnalysisResults({ result, onNewAnalysis }: Props) {
         </div>
       )}
 
+      {activeSection === 'transform' && (
+        <BeforeAfterView
+          requirement={result.requirement}
+          recommendations={result.recommendations}
+          issues={result.issues}
+        />
+      )}
+
       {activeSection === 'graph' && (
         <StandardsGraph
           recommendations={result.recommendations}
@@ -237,7 +246,7 @@ export default function AnalysisResults({ result, onNewAnalysis }: Props) {
       >
         <AlertTriangle size={14} color="#f59e0b" style={{ flexShrink: 0, marginTop: 2 }} />
         <p style={{ fontSize: '0.72rem', color: '#fbbf24', margin: 0, lineHeight: 1.6 }}>
-          AI-generated recommendation. Verify applicable standards, current editions, amendments, and certification requirements against official BIS sources before finalizing procurement documents.
+          AI-generated analysis is provided for assistance and should be verified against the applicable current official standard and authoritative source.
         </p>
       </div>
     </div>

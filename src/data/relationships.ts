@@ -22,4 +22,9 @@ export const DEMO_RELATIONSHIPS: StandardRelationship[] = [
   { id: 'r-013', sourceStandardId: 'std-014', targetStandardId: 'std-004', relationshipType: 'SAFETY', description: 'Safety requirements for AC circuit breakers' },
   // PPE relationships
   { id: 'r-014', sourceStandardId: 'std-015', targetStandardId: 'std-016', relationshipType: 'NORMATIVE_REFERENCE', description: 'General PPE requirements normatively referenced' },
+  // Stainless steel water tank relationships
+  { id: 'r-015', sourceStandardId: 'std-017', targetStandardId: 'std-018', relationshipType: 'NORMATIVE_REFERENCE', description: 'Drinking water specifications applicable to stored potable water in hospitals' },
+  { id: 'r-016', sourceStandardId: 'std-017', targetStandardId: 'std-019', relationshipType: 'INSTALLATION', description: 'Structural design & installation requirements for water storage tanks' },
+  { id: 'r-017', sourceStandardId: 'std-017', targetStandardId: 'std-020', relationshipType: 'SAFETY', description: 'Structural steel specification for tank supporting frame' },
+  { id: 'r-018', sourceStandardId: 'std-017', targetStandardId: 'std-021', relationshipType: 'RELATED_PRODUCT', description: 'Hospital water demand and plumbing code' },
 ];
