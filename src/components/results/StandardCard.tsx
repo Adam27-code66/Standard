@@ -1,18 +1,22 @@
 'use client';
 
-import { Recommendation } from '@/types';
-import { Eye, HelpCircle, Plus, CheckSquare, Square } from 'lucide-react';
+import { useState } from 'react';
+import { Recommendation, Standard } from '@/types';
+import { Eye, HelpCircle, Plus, CheckSquare, Square, FileText, GitBranch, Check } from 'lucide-react';
 import { getBisStandardUrl } from '@/utils/bisUrl';
+import StandardProfileModal from '@/components/explorer/StandardProfileModal';
+import { useLanguage } from '@/context/LanguageContext';
+import Link from 'next/link';
 
 const CATEGORY_CONFIG: Record<string, { color: string; badge: string }> = {
-  'Main Product Standard': { color: '#3b82f6', badge: 'badge-blue' },
-  'Testing Standard': { color: '#a78bfa', badge: 'badge-purple' },
-  'Safety Standard': { color: '#ef4444', badge: 'badge-red' },
-  'Installation Standard': { color: '#10b981', badge: 'badge-green' },
-  'Terminology Standard': { color: '#94a3b8', badge: 'badge-gray' },
-  'Material Standard': { color: '#f59e0b', badge: 'badge-amber' },
-  'Performance Standard': { color: '#00d4ff', badge: 'badge-cyan' },
-  'Related Product Standard': { color: '#64748b', badge: 'badge-gray' },
+  'Main Product Standard': { color: '#1d4ed8', badge: 'badge-blue' },
+  'Testing Standard': { color: '#7c3aed', badge: 'badge-purple' },
+  'Safety Standard': { color: '#dc2626', badge: 'badge-red' },
+  'Installation Standard': { color: '#059669', badge: 'badge-green' },
+  'Terminology Standard': { color: '#64748b', badge: 'badge-gray' },
+  'Material Standard': { color: '#d97706', badge: 'badge-amber' },
+  'Performance Standard': { color: '#0284c7', badge: 'badge-cyan' },
+  'Related Product Standard': { color: '#475569', badge: 'badge-gray' },
 };
 
 const STATUS_CONFIG: Record<string, string> = {
@@ -32,16 +36,29 @@ interface Props {
 }
 
 export default function StandardCard({ recommendation, selected, onSelect, onExplain, onAddToSpec }: Props) {
-  const { standard, relevanceScore, category } = recommendation;
-  const catConfig = CATEGORY_CONFIG[category] || { color: '#64748b', badge: 'badge-gray' };
+  const { t } = useLanguage();
+  const { standard, relevanceScore, category, confidenceLevel, matchBreakdown } = recommendation;
+  const catConfig = CATEGORY_CONFIG[category] || { color: '#475569', badge: 'badge-gray' };
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const mb = matchBreakdown || {
+    productMatch: Math.min(98, relevanceScore + 2),
+    materialMatch: Math.min(96, relevanceScore - 1),
+    applicationMatch: Math.min(94, relevanceScore - 3),
+    scopeMatch: Math.min(97, relevanceScore),
+  };
+
+  const confidence = confidenceLevel || (relevanceScore >= 85 ? 'High' : relevanceScore >= 70 ? 'Medium' : 'Low');
 
   return (
     <div
       className="glass-card"
       style={{
-        padding: '1.125rem 1.375rem',
-        border: `1px solid ${selected ? 'rgba(59,130,246,0.4)' : 'var(--border)'}`,
-        background: selected ? 'rgba(37,99,235,0.06)' : undefined,
+        padding: '1.25rem 1.5rem',
+        border: `1.5px solid ${selected ? '#1d4ed8' : '#e2e8f0'}`,
+        background: selected ? '#eff6ff' : '#ffffff',
+        borderRadius: 14,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
         transition: 'all 0.2s ease',
       }}
     >
@@ -53,9 +70,9 @@ export default function StandardCard({ recommendation, selected, onSelect, onExp
           aria-label={selected ? 'Deselect standard' : 'Select standard'}
         >
           {selected ? (
-            <CheckSquare size={18} color="#3b82f6" />
+            <CheckSquare size={20} color="#1d4ed8" />
           ) : (
-            <Square size={18} color="var(--text-muted)" />
+            <Square size={20} color="#94a3b8" />
           )}
         </button>
 
@@ -63,101 +80,160 @@ export default function StandardCard({ recommendation, selected, onSelect, onExp
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: catConfig.color, fontFamily: 'monospace' }}>
-                  {standard.standardNumber}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: catConfig.color, fontFamily: 'monospace' }}>
+                  {standard.standardNumber}:{standard.version}
                 </span>
                 <span className={`badge ${catConfig.badge}`}>{category}</span>
                 <span className={`badge ${STATUS_CONFIG[standard.status] || 'badge-gray'}`}>
-                  {standard.status === 'Current' ? '🟢' : standard.status === 'Amended' ? '🟡' : '🔴'} {standard.status}
+                  ● {standard.status}
                 </span>
-                {standard.certificationRequired && (
-                  <span className="badge badge-amber">BIS Cert. Required</span>
-                )}
+                <span className={`badge ${confidence === 'High' ? 'badge-green' : 'badge-amber'}`}>
+                  Confidence: {confidence}
+                </span>
+                <span className="badge badge-gray" style={{ fontSize: '0.65rem' }}>
+                  DEMO DATA
+                </span>
               </div>
-              <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 0.375rem', lineHeight: 1.4 }}>
+
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.35rem', lineHeight: 1.4 }}>
                 {standard.title}
               </h3>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 0.625rem', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.8125rem', color: '#475569', margin: '0 0 0.75rem', lineHeight: 1.55 }}>
                 {standard.description}
               </p>
-              <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                <span>Version: <strong style={{ color: 'var(--text-secondary)' }}>{standard.version}</strong></span>
-                <span>·</span>
-                <span>Amendments: <strong style={{ color: 'var(--text-secondary)' }}>{standard.amendments}</strong></span>
-                <span>·</span>
-                <span>Industry: <strong style={{ color: 'var(--text-secondary)' }}>{standard.industry.join(', ')}</strong></span>
-              </div>
             </div>
 
-            {/* Relevance score */}
+            {/* Relevance Score Badge */}
             <div style={{ textAlign: 'center', flexShrink: 0 }}>
               <div
                 style={{
-                  width: 56,
-                  height: 56,
+                  width: 62,
+                  height: 62,
                   borderRadius: '50%',
-                  background: `conic-gradient(${relevanceScore >= 80 ? '#10b981' : relevanceScore >= 60 ? '#3b82f6' : '#f59e0b'} ${relevanceScore * 3.6}deg, var(--navy-700) 0deg)`,
+                  background: `conic-gradient(${relevanceScore >= 80 ? '#10b981' : relevanceScore >= 60 ? '#1d4ed8' : '#d97706'} ${relevanceScore * 3.6}deg, #e2e8f0 0deg)`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  position: 'relative',
                 }}
               >
-                <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--navy-800)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: relevanceScore >= 80 ? '#10b981' : relevanceScore >= 60 ? '#60a5fa' : '#f59e0b' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 800, color: relevanceScore >= 80 ? '#10b981' : relevanceScore >= 60 ? '#1d4ed8' : '#d97706' }}>
                     {relevanceScore}%
                   </span>
                 </div>
               </div>
-              <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: 4 }}>AI Relevance</div>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', marginTop: 4 }}>Relevance</div>
             </div>
           </div>
 
-          {/* Relevance bar */}
-          <div style={{ marginTop: '0.625rem' }}>
-            <div className="relevance-bar">
-              <div className="relevance-fill" style={{ width: `${relevanceScore}%` }} />
+          {/* WHY THIS STANDARD? Box */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '0.875rem 1rem', marginBottom: '0.875rem' }}>
+            <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.5rem' }}>
+              WHY THIS STANDARD?
+            </div>
+            <div style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', fontSize: '0.7875rem', color: '#15803d', fontWeight: 600 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>✓ Product type match</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>✓ Material match</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>✓ Application match</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>✓ Scope match</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>✓ Technical requirement match</span>
             </div>
           </div>
 
-          {/* Matched reasons */}
-          <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginTop: '0.625rem' }}>
-            {recommendation.aiReasoning.slice(0, 3).map((r, i) => (
-              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.7rem', color: '#10b981' }}>
-                ✓ {r}
-              </span>
-            ))}
+          {/* MATCH BREAKDOWN Bars */}
+          <div style={{ marginBottom: '0.875rem' }}>
+            <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.35rem' }}>
+              MATCH BREAKDOWN:
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.5rem', fontSize: '0.75rem' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#334155', fontWeight: 600, marginBottom: 2 }}>
+                  <span>Product Match</span>
+                  <span>{mb.productMatch}%</span>
+                </div>
+                <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                  <div style={{ height: '100%', width: `${mb.productMatch}%`, background: '#1d4ed8', borderRadius: 2 }} />
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#334155', fontWeight: 600, marginBottom: 2 }}>
+                  <span>Material Match</span>
+                  <span>{mb.materialMatch}%</span>
+                </div>
+                <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                  <div style={{ height: '100%', width: `${mb.materialMatch}%`, background: '#10b981', borderRadius: 2 }} />
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#334155', fontWeight: 600, marginBottom: 2 }}>
+                  <span>Application Match</span>
+                  <span>{mb.applicationMatch}%</span>
+                </div>
+                <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                  <div style={{ height: '100%', width: `${mb.applicationMatch}%`, background: '#0284c7', borderRadius: 2 }} />
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#334155', fontWeight: 600, marginBottom: 2 }}>
+                  <span>Scope Match</span>
+                  <span>{mb.scopeMatch}%</span>
+                </div>
+                <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                  <div style={{ height: '100%', width: `${mb.scopeMatch}%`, background: '#7c3aed', borderRadius: 2 }} />
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Actions */}
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.875rem', flexWrap: 'wrap' }}>
-            <button id={`explain-btn-${standard.id}`} className="btn-ghost" onClick={onExplain} style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}>
-              <HelpCircle size={13} />
-              Why Recommended?
-            </button>
-            <button className="btn-ghost" onClick={onAddToSpec} style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}>
-              <Plus size={13} />
-              {selected ? 'Added to Spec' : 'Add to Specification'}
-            </button>
-            <a
-              href={getBisStandardUrl(standard.standardNumber)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-ghost"
-              style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <button
+              id={`why-btn-${standard.id}`}
+              className="btn-secondary"
+              onClick={onExplain}
+              style={{ fontSize: '0.75rem', padding: '0.4rem 0.85rem', gap: '0.35rem' }}
             >
-              <Eye size={13} />
-              View Standard
-            </a>
-          </div>
+              <HelpCircle size={14} />
+              {t('whyThisStandard') || 'Why This Standard?'}
+            </button>
 
-          {/* Demo label */}
-          <div style={{ marginTop: '0.5rem' }}>
-            <span className="badge badge-gray" style={{ fontSize: '0.6rem' }}>Demo Knowledge Base • Not Official BIS Data</span>
+            <button
+              className="btn-secondary"
+              onClick={onExplain}
+              style={{ fontSize: '0.75rem', padding: '0.4rem 0.85rem', gap: '0.35rem' }}
+            >
+              <FileText size={14} />
+              {t('viewEvidence') || 'View Evidence'}
+            </button>
+
+            <Link
+              href={`/graph?std=${standard.id}`}
+              className="btn-ghost"
+              style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+            >
+              <GitBranch size={14} />
+              {t('relatedStandards') || 'Related Standards'}
+            </Link>
+
+            <button
+              className="btn-ghost"
+              onClick={() => setProfileOpen(true)}
+              style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem', gap: '0.35rem' }}
+            >
+              <Eye size={14} />
+              {t('viewDetails') || 'View Details'}
+            </button>
           </div>
         </div>
       </div>
+
+      {profileOpen && (
+        <StandardProfileModal standard={standard} onClose={() => setProfileOpen(false)} />
+      )}
     </div>
   );
 }

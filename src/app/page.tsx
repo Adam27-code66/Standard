@@ -67,7 +67,7 @@ export default function Dashboard() {
               }}
             >
               <Sparkles size={14} color="#1d4ed8" />
-              <span>{t('aiStandardsIntel')}</span>
+              <span>IS-SMART — INDIAN STANDARDS INTELLIGENCE</span>
             </div>
 
             {/* Headline */}
@@ -76,28 +76,58 @@ export default function Dashboard() {
                 fontSize: '2.25rem',
                 fontWeight: 800,
                 color: '#0f172a',
-                lineHeight: 1.25,
+                lineHeight: 1.2,
                 letterSpacing: '-0.02em',
                 margin: '0 0 0.875rem 0',
               }}
             >
-              {t('heroTitlePart1')}
-              <span style={{ color: '#1d4ed8' }}>{t('indianStandards')}</span>
-              {t('heroTitlePart2')}
+              FIND THE RIGHT INDIAN STANDARDS.<br />
+              <span style={{ color: '#1d4ed8' }}>BUILD BETTER TENDERS.</span>
             </h1>
 
             {/* Subtitle */}
             <p
               style={{
-                fontSize: '0.925rem',
+                fontSize: '0.95rem',
                 color: '#475569',
                 maxWidth: 640,
                 lineHeight: 1.6,
                 margin: '0 0 1.5rem 0',
               }}
             >
-              {t('heroSubtitle')}
+              AI-assisted Indian Standards intelligence for procurement, tender specification, compliance review and technical requirement analysis.
             </p>
+
+            {/* CTA Buttons */}
+            <div style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+              <Link
+                href="/analyze"
+                className="btn-primary"
+                style={{
+                  padding: '0.75rem 1.6rem',
+                  borderRadius: 10,
+                  fontSize: '0.925rem',
+                  fontWeight: 700,
+                  gap: '0.5rem',
+                  background: '#1d4ed8',
+                }}
+              >
+                <span>Start Analysis</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link
+                href="/explorer"
+                className="btn-secondary"
+                style={{
+                  padding: '0.75rem 1.6rem',
+                  borderRadius: 10,
+                  fontSize: '0.925rem',
+                  fontWeight: 700,
+                }}
+              >
+                Explore Standards
+              </Link>
+            </div>
 
             {/* Procurement Requirement Box */}
             <div
@@ -110,12 +140,12 @@ export default function Dashboard() {
               }}
             >
               <div style={{ fontSize: '0.7875rem', color: '#64748b', marginBottom: '0.5rem', fontWeight: 500 }}>
-                {t('describeProcurementDetail')}
+                Try natural language input or upload tender:
               </div>
               <textarea
                 value={requirementText}
                 onChange={(e) => setRequirementText(e.target.value)}
-                placeholder={t('procurementPlaceholder')}
+                placeholder="Procure 500 stainless steel water storage tanks of 750 litre capacity for government hospitals."
                 style={{
                   width: '100%',
                   border: 'none',
@@ -142,7 +172,8 @@ export default function Dashboard() {
               >
                 {/* Upload & Format Chips */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button
+                  <Link
+                    href="/tender"
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -154,12 +185,12 @@ export default function Dashboard() {
                       fontSize: '0.75rem',
                       fontWeight: 600,
                       color: '#334155',
-                      cursor: 'pointer',
+                      textDecoration: 'none',
                     }}
                   >
                     <Upload size={14} color="#475569" />
-                    <span>{t('uploadTenderDoc')}</span>
-                  </button>
+                    <span>Upload Tender Doc</span>
+                  </Link>
                   <span style={{ padding: '0.2rem 0.5rem', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: '0.6875rem', fontWeight: 700, color: '#ef4444' }}>PDF</span>
                   <span style={{ padding: '0.2rem 0.5rem', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: '0.6875rem', fontWeight: 700, color: '#1d4ed8' }}>DOCX</span>
                   <span style={{ padding: '0.2rem 0.5rem', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: '0.6875rem', fontWeight: 700, color: '#10b981' }}>XLSX</span>
@@ -179,7 +210,7 @@ export default function Dashboard() {
                   }}
                 >
                   <Sparkles size={16} fill="#ffffff" />
-                  <span>{t('analyzeRequirement')}</span>
+                  <span>Analyze Requirement</span>
                   <ArrowRight size={16} />
                 </Link>
               </div>
@@ -201,7 +232,7 @@ export default function Dashboard() {
           >
             <img
               src="/images/hero-workflow.svg"
-              alt="Tender to Compliance AI Workflow Diagram: Tender Document -> AI Analysis -> Indian Standards -> Gap Analysis -> Compliance Report"
+              alt="Tender to Compliance AI Workflow Diagram"
               style={{
                 width: '100%',
                 height: 'auto',
@@ -546,6 +577,11 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── Trust & Responsible AI Notice ── */}
+        <div style={{ padding: '0.875rem 1.25rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, fontSize: '0.7875rem', color: '#92400e', lineHeight: 1.5 }}>
+          <strong>Trust & Responsible AI Notice:</strong> IS-SMART provides AI-assisted standards recommendations based on indexed information. Always verify the latest official BIS publication, amendment, notification and applicable certification requirements before using the output in a procurement or compliance decision.
         </div>
       </div>
     </AppShell>

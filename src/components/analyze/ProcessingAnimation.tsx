@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { CheckCircle, Loader2 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
-const STAGES = [
-  { icon: '🧠', label: 'Understanding requirement', key: 'understand' },
-  { icon: '🔎', label: 'Identifying product category', key: 'identify' },
-  { icon: '📋', label: 'Extracting technical requirements', key: 'extract' },
-  { icon: '🧬', label: 'Semantic matching against knowledge base', key: 'match' },
-  { icon: '🔗', label: 'Discovering related standards', key: 'discover' },
-  { icon: '🕒', label: 'Checking versions & amendments', key: 'version' },
-  { icon: '🚨', label: 'Auditing tender compliance', key: 'audit' },
-  { icon: '✅', label: 'Generating recommendations', key: 'generate' },
+const STAGE_KEYS = [
+  { icon: '🧠', labelEn: 'Understanding requirement', key: 'understand' },
+  { icon: '🔎', labelEn: 'Identifying product category', key: 'identify' },
+  { icon: '📋', labelEn: 'Extracting technical requirements', key: 'extract' },
+  { icon: '🧬', labelEn: 'Semantic matching against knowledge base', key: 'match' },
+  { icon: '🔗', labelEn: 'Discovering related standards', key: 'discover' },
+  { icon: '🕒', labelEn: 'Checking versions & amendments', key: 'version' },
+  { icon: '🚨', labelEn: 'Auditing tender compliance', key: 'audit' },
+  { icon: '✅', labelEn: 'Generating recommendations', key: 'generate' },
 ];
 
 interface ProcessingAnimationProps {
@@ -19,30 +20,31 @@ interface ProcessingAnimationProps {
 }
 
 export default function ProcessingAnimation({ onComplete }: ProcessingAnimationProps) {
+  const { t } = useLanguage();
   const [current, setCurrent] = useState(0);
   const [done, setDone] = useState<string[]>([]);
 
   useEffect(() => {
-    if (current >= STAGES.length) {
+    if (current >= STAGE_KEYS.length) {
       onComplete();
       return;
     }
     const delay = 400 + Math.random() * 300;
-    const t = setTimeout(() => {
-      setDone((d) => [...d, STAGES[current].key]);
+    const timer = setTimeout(() => {
+      setDone((d) => [...d, STAGE_KEYS[current].key]);
       setCurrent((c) => c + 1);
     }, delay);
-    return () => clearTimeout(t);
-  }, [current]);
+    return () => clearTimeout(timer);
+  }, [current, onComplete]);
 
-  const progress = Math.round((done.length / STAGES.length) * 100);
+  const progress = Math.round((done.length / STAGE_KEYS.length) * 100);
 
   return (
     <div
       className="glass-card-bright"
       style={{ padding: '2.5rem', maxWidth: 520, margin: '0 auto', textAlign: 'center' }}
     >
-      {/* Header */}
+      {/* Header Icon */}
       <div
         style={{
           width: 64,
@@ -54,69 +56,59 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
           alignItems: 'center',
           justifyContent: 'center',
           margin: '0 auto 1.25rem',
-          animation: current < STAGES.length ? 'pulse-glow 2s ease infinite' : 'none',
         }}
       >
         <span style={{ fontSize: '1.75rem' }}>🤖</span>
       </div>
 
-      <h2 style={{ fontSize: '1.0625rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
-        AI Analysis in Progress
-      </h2>
-      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.75rem' }}>
-        IS-SMART is analyzing your requirement against the standards knowledge base...
-      </p>
+      <h3 style={{ fontSize: '1.125rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.25rem' }}>
+        {t('processing') || 'AI Analysis Pipeline Running...'}
+      </h3>
 
-      {/* Progress bar */}
-      <div className="progress-bar" style={{ marginBottom: '1.5rem', height: 8 }}>
-        <div
-          className="progress-fill"
-          style={{ width: `${progress}%`, transition: 'width 0.5s ease' }}
-        />
+      {/* Progress Bar */}
+      <div style={{ margin: '1.5rem 0 1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '0.35rem' }}>
+          <span>Pipeline Progress</span>
+          <span>{progress}%</span>
+        </div>
+        <div style={{ height: 8, background: '#e2e8f0', borderRadius: 4, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #2563eb, #10b981)', transition: 'width 0.3s ease' }} />
+        </div>
       </div>
 
-      {/* Stages */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', textAlign: 'left' }}>
-        {STAGES.map((stage, i) => {
+      {/* Stage List */}
+      <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {STAGE_KEYS.map((stage, idx) => {
           const isDone = done.includes(stage.key);
-          const isActive = current === i;
+          const isCurrent = current === idx;
           return (
             <div
               key={stage.key}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.875rem',
-                opacity: isDone || isActive ? 1 : 0.35,
-                transition: 'opacity 0.3s, transform 0.3s',
-                transform: isActive ? 'translateX(4px)' : 'none',
+                gap: '0.65rem',
+                padding: '0.5rem 0.75rem',
+                borderRadius: 8,
+                background: isDone ? '#f0fdf4' : isCurrent ? '#eff6ff' : 'transparent',
+                border: isDone ? '1px solid #bbf7d0' : isCurrent ? '1px solid #bfdbfe' : '1px solid transparent',
+                opacity: isDone || isCurrent ? 1 : 0.45,
+                transition: 'all 0.2s ease',
               }}
             >
-              <div style={{ fontSize: '1rem', width: 24, textAlign: 'center' }}>{stage.icon}</div>
-              <span
-                style={{
-                  fontSize: '0.8375rem',
-                  color: isDone ? '#10b981' : isActive ? '#60a5fa' : 'var(--text-muted)',
-                  fontWeight: isDone || isActive ? 500 : 400,
-                  flex: 1,
-                }}
-              >
-                {stage.label}
+              <span style={{ fontSize: '0.9rem' }}>{stage.icon}</span>
+              <span style={{ flex: 1, fontSize: '0.8125rem', fontWeight: isDone || isCurrent ? 700 : 500, color: isDone ? '#15803d' : isCurrent ? '#1d4ed8' : '#64748b' }}>
+                {t(stage.key) || stage.labelEn}
               </span>
-              {isDone && <CheckCircle size={15} color="#10b981" />}
-              {isActive && <Loader2 size={15} color="#60a5fa" style={{ animation: 'spin 1s linear infinite' }} />}
+              {isDone ? (
+                <CheckCircle size={16} color="#16a34a" />
+              ) : isCurrent ? (
+                <Loader2 size={16} className="animate-spin" color="#2563eb" />
+              ) : null}
             </div>
           );
         })}
       </div>
-
-      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '1.5rem' }}>
-        Demo Mode: Using local knowledge base
-      </p>
-
-      <style jsx global>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   );
 }

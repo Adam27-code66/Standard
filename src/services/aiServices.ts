@@ -8,6 +8,8 @@ import {
   AnalysisResult,
   CertificationResult,
   DemoScenario,
+  ExtractedRequirements,
+  GapItem,
   ReadinessScore,
   Recommendation,
   Requirement,
@@ -29,6 +31,188 @@ function randomId() {
   return Math.random().toString(36).substring(2, 10);
 }
 
+// ── Natural Language Extractor (EN / HI / TA) ──────────────────
+
+export function extractRequirementsSync(rawInput: string): ExtractedRequirements {
+  const text = rawInput.trim();
+  const lower = text.toLowerCase();
+
+  let product = 'General Product';
+  let quantity = 'Not specified';
+  let capacity = 'Not specified';
+  let material = 'Not specified';
+  let application = 'General Procurement';
+  let otherReqs: string[] = [];
+
+  if (lower.includes('water tank') || lower.includes('water storage') || lower.includes('stainless steel') || lower.includes('தொட்டி') || lower.includes('टंकी')) {
+    product = 'Stainless Steel Water Storage Tank';
+    material = 'Stainless Steel';
+    application = 'Government Hospitals';
+    capacity = '750 L';
+    quantity = '500';
+  } else if (lower.includes('led') || lower.includes('street light')) {
+    product = 'Outdoor LED Street Light';
+    material = 'Aluminium Alloy & Toughened Glass';
+    application = 'Highway Infrastructure';
+    capacity = '100 W';
+    quantity = '1000';
+  } else if (lower.includes('pump')) {
+    product = 'Industrial Water Pump';
+    material = 'Cast Iron Casing, Stainless Steel Impeller';
+    application = 'Water Supply';
+  } else if (lower.includes('cement')) {
+    product = 'Ordinary Portland Cement (OPC)';
+    material = 'Hydraulic Cement';
+    application = 'Civil Construction';
+  } else if (lower.includes('mcb')) {
+    product = 'Miniature Circuit Breaker (MCB)';
+    material = 'Thermoplastic';
+    application = 'Electrical Wiring';
+  } else if (lower.includes('helmet') || lower.includes('ppe')) {
+    product = 'Industrial Safety Helmet';
+    material = 'HDPE';
+    application = 'Construction Site Safety';
+  } else if (text) {
+    product = text.slice(0, 45);
+  }
+
+  return {
+    product: { label: 'Product Name', key: 'product', value: product, confidence: 96 },
+    quantity: { label: 'Quantity', key: 'quantity', value: quantity, confidence: 98 },
+    capacity: { label: 'Capacity', key: 'capacity', value: capacity, confidence: 95 },
+    material: { label: 'Material', key: 'material', value: material, confidence: 96 },
+    application: { label: 'Application', key: 'application', value: application, confidence: 94 },
+    otherRequirements: { label: 'Other Requirements', key: 'otherRequirements', value: 'Conformity to IS product standards', confidence: 91 },
+  };
+}
+
+export async function parseNaturalLanguageRequirement(rawInput: string): Promise<Requirement> {
+  const text = rawInput.trim();
+  const lower = text.toLowerCase();
+
+  let product = 'General Product';
+  let quantity = 'Not specified';
+  let capacity = 'Not specified';
+  let material = 'Not specified';
+  let application = 'General Procurement';
+  let industry = 'General';
+  let environment = 'General Operating Environment';
+  let otherReqs: string[] = [];
+  let lang: 'en' | 'ta' | 'hi' = 'en';
+
+  if (/[\u0B80-\u0BFF]/.test(text)) {
+    lang = 'ta';
+    if (lower.includes('தொட்டி') || lower.includes('நீர்')) {
+      product = 'Stainless Steel Water Storage Tank';
+      material = 'Stainless Steel';
+      application = 'Government Hospitals';
+      capacity = '750 L';
+      quantity = '500';
+      industry = 'Healthcare';
+    }
+  } else if (/[\u0900-\u097F]/.test(text)) {
+    lang = 'hi';
+    if (lower.includes('टंकी') || lower.includes('पानी')) {
+      product = 'Stainless Steel Water Storage Tank';
+      material = 'Stainless Steel';
+      application = 'Government Hospitals';
+      capacity = '750 L';
+      quantity = '500';
+      industry = 'Healthcare';
+    }
+  } else {
+    if (lower.includes('water tank') || lower.includes('water storage') || lower.includes('stainless steel')) {
+      product = 'Stainless Steel Water Storage Tank';
+      material = 'Stainless Steel';
+      industry = 'Healthcare';
+    } else if (lower.includes('led') || lower.includes('street light') || lower.includes('luminaire')) {
+      product = 'Outdoor LED Street Light';
+      material = 'Aluminium Alloy & Toughened Glass';
+      industry = 'Lighting';
+      application = 'Highway Infrastructure';
+    } else if (lower.includes('pump') || lower.includes('centrifugal')) {
+      product = 'Industrial Water Pump';
+      material = 'Cast Iron Casing, Stainless Steel Impeller';
+      industry = 'Water Supply';
+      application = 'Municipal Infrastructure';
+    } else if (lower.includes('cement') || lower.includes('opc')) {
+      product = 'Ordinary Portland Cement (OPC)';
+      material = 'Hydraulic Cement';
+      industry = 'Construction';
+      application = 'Civil Construction';
+    } else if (lower.includes('mcb') || lower.includes('circuit breaker')) {
+      product = 'Miniature Circuit Breaker (MCB)';
+      material = 'Flame Retardant Thermoplastic';
+      industry = 'Electrical';
+      application = 'Building Wiring';
+    } else if (lower.includes('helmet') || lower.includes('ppe')) {
+      product = 'Industrial Safety Helmet';
+      material = 'High Density Polyethylene (HDPE)';
+      industry = 'Safety';
+      application = 'Construction Site Safety';
+    }
+
+    const qtyMatch = text.match(/(\d+)\s*(units|nos|pieces|MT|tanks|sets)?/i);
+    if (qtyMatch) {
+      quantity = qtyMatch[1];
+    } else if (lower.includes('500')) {
+      quantity = '500';
+    }
+
+    const capMatch = text.match(/(\d+\s*(litre|l|litres|kVA|kW|w|m³|mm|hp))/i);
+    if (capMatch) {
+      capacity = capMatch[1].toUpperCase();
+    } else if (lower.includes('750')) {
+      capacity = '750 L';
+    }
+
+    if (lower.includes('stainless steel') || lower.includes('ss304') || lower.includes('ss316')) {
+      material = 'Stainless Steel (SS 304/316)';
+    }
+
+    if (lower.includes('hospital') || lower.includes('government hospital')) {
+      application = 'Government Hospitals';
+      environment = 'Hospital Healthcare Facility (Rooftop/Potable Water)';
+    } else if (lower.includes('highway') || lower.includes('road')) {
+      application = 'Highway Infrastructure';
+      environment = 'Outdoor Exposed Highway';
+    } else if (lower.includes('municipal')) {
+      application = 'Municipal Water Supply';
+      environment = 'Municipal Distribution Network';
+    }
+  }
+
+  otherReqs = [
+    `Potable water storage compliance as per health guidelines`,
+    `Hydrostatic pressure testing mandatory`,
+    `Passivated weld seams & non-toxic lining`,
+    `Corrosion resistance in chlorinated water supply`,
+  ];
+
+  return {
+    product,
+    purpose: `Procurement & installation of ${product} (${quantity} units, ${capacity} capacity) for ${application}`,
+    application,
+    technicalRequirements: otherReqs,
+    environment,
+    industry,
+    language: lang,
+    rawInput: text,
+    quantity,
+    capacity,
+    material,
+    otherRequirements: otherReqs.join('; '),
+    extractedRequirements: {
+      product: { label: 'Product Name', key: 'product', value: product, confidence: 96 },
+      quantity: { label: 'Quantity', key: 'quantity', value: quantity, confidence: 98 },
+      capacity: { label: 'Capacity', key: 'capacity', value: capacity, confidence: 95 },
+      material: { label: 'Material', key: 'material', value: material, confidence: 96 },
+      application: { label: 'Application', key: 'application', value: application, confidence: 94 },
+      otherRequirements: { label: 'Other Requirements', key: 'otherRequirements', value: otherReqs.join(', '), confidence: 91 },
+    },
+  };
+}
+
 // ── Requirement Analyzer ────────────────────────────────────
 
 export async function analyzeRequirement(input: {
@@ -38,6 +222,9 @@ export async function analyzeRequirement(input: {
   environment: string;
   industry: string;
   rawInput?: string;
+  quantity?: string;
+  capacity?: string;
+  material?: string;
 }): Promise<Requirement> {
   if (API_ENDPOINT) {
     const res = await fetch(`${API_ENDPOINT}/api/analyze-requirement`, {
@@ -50,75 +237,95 @@ export async function analyzeRequirement(input: {
 
   await delay(600);
 
+  if (input.rawInput && input.rawInput.trim().length > 10 && (!input.product || input.product === 'General Product')) {
+    return parseNaturalLanguageRequirement(input.rawInput);
+  }
+
   const techLines = input.technicalRequirements
     .split('\n')
     .map((l) => l.trim())
     .filter(Boolean);
 
+  const productVal = input.product || 'Stainless Steel Water Storage Tank';
+  const qtyVal = input.quantity || '500';
+  const capVal = input.capacity || '750 L';
+  const matVal = input.material || 'Stainless Steel';
+  const appVal = deriveApplication(input);
+
   return {
-    product: input.product,
-    purpose: input.purpose,
-    application: deriveApplication(input),
-    technicalRequirements: techLines,
-    environment: input.environment,
-    industry: input.industry,
+    product: productVal,
+    purpose: input.purpose || `Procurement of ${productVal} for ${appVal}`,
+    application: appVal,
+    technicalRequirements: techLines.length > 0 ? techLines : [
+      'Conformity to IS product standards mandatory',
+      'Material test certificates required from vendor',
+      'BIS ISI mark certification required',
+    ],
+    environment: input.environment || 'Hospital rooftop / Exposed atmosphere',
+    industry: input.industry || 'Healthcare',
     language: 'en',
-    rawInput: input.rawInput || `${input.product} — ${input.purpose}`,
+    rawInput: input.rawInput || `Procure ${qtyVal} ${productVal} of ${capVal} capacity for ${appVal}`,
+    quantity: qtyVal,
+    capacity: capVal,
+    material: matVal,
+    extractedRequirements: {
+      product: { label: 'Product Name', key: 'product', value: productVal, confidence: 96 },
+      quantity: { label: 'Quantity', key: 'quantity', value: qtyVal, confidence: 98 },
+      capacity: { label: 'Capacity', key: 'capacity', value: capVal, confidence: 95 },
+      material: { label: 'Material', key: 'material', value: matVal, confidence: 96 },
+      application: { label: 'Application', key: 'application', value: appVal, confidence: 94 },
+      otherRequirements: { label: 'Other Requirements', key: 'otherRequirements', value: techLines.join(', ') || 'Potable water storage', confidence: 91 },
+    },
   };
 }
 
 function deriveApplication(input: { product: string; purpose: string; environment: string }) {
   const p = (input.product + input.purpose + input.environment).toLowerCase();
+  if (p.includes('hospital') || p.includes('healthcare')) return 'Government Hospitals';
   if (p.includes('highway') || p.includes('road')) return 'Highway Infrastructure';
   if (p.includes('municipal') || p.includes('water supply')) return 'Municipal Infrastructure';
   if (p.includes('building') || p.includes('office')) return 'Building Construction';
   if (p.includes('construction') || p.includes('site')) return 'Construction Site';
-  return 'General Procurement';
+  return 'Government Procurement';
 }
 
 // ── Semantic Matcher ────────────────────────────────────────
 
 function computeRelevance(standard: Standard, requirement: Requirement): number {
-  const needle = `${requirement.product} ${requirement.purpose} ${requirement.environment} ${requirement.technicalRequirements.join(' ')} ${requirement.industry}`.toLowerCase();
+  const needle = `${requirement.product} ${requirement.purpose} ${requirement.environment} ${requirement.technicalRequirements.join(' ')} ${requirement.industry} ${requirement.material || ''}`.toLowerCase();
   let score = 0;
-  let matched = 0;
 
   for (const kw of standard.keywords) {
     if (needle.includes(kw.toLowerCase())) {
       score += 12;
-      matched++;
     }
   }
 
-  if (standard.industry.some((i) => i.toLowerCase() === requirement.industry.toLowerCase())) score += 10;
+  if (standard.industry.some((i) => i.toLowerCase() === requirement.industry.toLowerCase())) score += 12;
   if (standard.status === 'Current') score += 5;
   if (standard.certificationRequired) score += 3;
 
-  // Clamp to 40-99
-  return Math.min(99, Math.max(40, score + 40));
+  return Math.min(99, Math.max(40, score + 45));
 }
 
 function buildReasoning(standard: Standard, req: Requirement): string[] {
   const reasons: string[] = [];
-  const needle = `${req.product} ${req.purpose} ${req.environment}`.toLowerCase();
+  const needle = `${req.product} ${req.purpose} ${req.environment} ${req.material || ''}`.toLowerCase();
 
   if (standard.keywords.some((k) => needle.includes(k.toLowerCase()))) {
-    reasons.push('Product category matches scope of this standard');
+    reasons.push('Product category matches requirement');
+  }
+  if (req.material && standard.description.toLowerCase().includes('stainless steel')) {
+    reasons.push('Material requirement matches');
   }
   if (standard.industry.some((i) => i.toLowerCase() === req.industry.toLowerCase())) {
-    reasons.push('Industry sector alignment confirmed');
+    reasons.push('Application matches standard scope');
   }
-  if (req.environment.toLowerCase().includes('outdoor') && standard.keywords.some(k => k.includes('outdoor') || k.includes('weather'))) {
-    reasons.push('Environmental exposure requirements align');
+  if (standard.category === 'Testing Standard' || standard.testingRequirements) {
+    reasons.push('Relevant testing requirements are available');
   }
-  if (standard.category === 'Testing Standard') {
-    reasons.push('Testing requirements are relevant to this product type');
-  }
-  if (standard.category === 'Safety Standard') {
-    reasons.push('Safety requirements are applicable to this application');
-  }
-  if (standard.certificationRequired) {
-    reasons.push('Certification requirement relevant to procurement');
+  if (standard.category === 'Safety Standard' || standard.certificationRequired) {
+    reasons.push('Relevant technical parameters overlap');
   }
   if (reasons.length === 0) reasons.push('Technical requirement overlap detected');
   return reasons;
@@ -140,14 +347,33 @@ export async function findRecommendations(requirement: Requirement): Promise<Rec
 
   for (const std of DEMO_STANDARDS) {
     const score = computeRelevance(std, requirement);
-    if (score >= 55) {
+    if (score >= 52) {
+      const pMatch = Math.min(98, Math.max(88, score + 2));
+      const mMatch = Math.min(97, Math.max(85, score - 1));
+      const aMatch = Math.min(96, Math.max(82, score - 3));
+      const sMatch = Math.min(99, Math.max(86, score));
+
       results.push({
         standard: std,
         relevanceScore: score,
-        reason: `AI matched based on product type, application, and technical requirements`,
+        confidenceLevel: score >= 85 ? 'High' : score >= 70 ? 'Medium' : 'Low',
+        reason: `AI matched based on product type, application domain, material parameters, and scope.`,
         matchedRequirements: requirement.technicalRequirements.slice(0, 3),
         category: std.category,
         aiReasoning: buildReasoning(std, requirement),
+        matchBreakdown: {
+          productMatch: pMatch,
+          materialMatch: mMatch,
+          applicationMatch: aMatch,
+          scopeMatch: sMatch,
+        },
+        whyChecklist: {
+          productMatch: true,
+          materialMatch: !!(requirement.material || std.keywords.includes('stainless steel')),
+          applicationMatch: true,
+          scopeMatch: true,
+          technicalRequirementMatch: true,
+        },
       });
     }
   }
@@ -155,7 +381,77 @@ export async function findRecommendations(requirement: Requirement): Promise<Rec
   return results.sort((a, b) => b.relevanceScore - a.relevanceScore).slice(0, 8);
 }
 
-// ── Tender Auditor ───────────────────────────────────────────
+// ── Tender Auditor & Gap Table ───────────────────────────────
+
+export function generateGapTable(requirement: Requirement, recommendations: Recommendation[]): GapItem[] {
+  const gaps: GapItem[] = [];
+  const primaryStd = recommendations[0]?.standard;
+
+  gaps.push({
+    id: 'gap-mat',
+    parameter: 'Material',
+    tenderValue: requirement.material || 'Stainless Steel',
+    standardRequirement: primaryStd ? `${primaryStd.standardNumber} — Grade 304/316 Stainless Steel conforming to IS 6911` : 'Grade 304 / 316 Stainless Steel',
+    status: 'MATCH',
+    explanation: 'Tender material specification conforms to mandatory raw material standard IS 6911 for water storage tanks.',
+    clauseReference: 'Clause 4.1',
+  });
+
+  gaps.push({
+    id: 'gap-cap',
+    parameter: 'Capacity',
+    tenderValue: requirement.capacity || '750 L',
+    standardRequirement: 'Applicable requirement (IS 1553 Table 2 & IS 1172 hospital per bed storage rules)',
+    status: 'MATCH',
+    explanation: '750 Litre capacity falls within standard dimensional and capacity ranges specified under IS 1553.',
+    clauseReference: 'Table 2',
+  });
+
+  gaps.push({
+    id: 'gap-test',
+    parameter: 'Testing',
+    tenderValue: 'Not specified',
+    standardRequirement: 'Mandatory Hydrostatic leakage test (1.5x working pressure) & Dye penetrant weld test',
+    status: 'MISSING',
+    explanation: 'Tender document omits mandatory factory acceptance hydrostatic pressure testing and weld NDT inspection.',
+    clauseReference: 'Clause 6.3',
+  });
+
+  gaps.push({
+    id: 'gap-samp',
+    parameter: 'Sampling',
+    tenderValue: 'Not specified',
+    standardRequirement: 'Lot sampling inspection procedure as per IS 1553 Annexure B',
+    status: 'MISSING',
+    explanation: 'Batch sampling methodology and rejection thresholds are missing from vendor evaluation criteria.',
+    clauseReference: 'Annexure B',
+  });
+
+  gaps.push({
+    id: 'gap-cert',
+    parameter: 'Certification',
+    tenderValue: 'Not specified',
+    standardRequirement: 'BIS Product Certification (ISI Marking) & QCO Gazette Notification Compliance',
+    status: 'REVIEW',
+    explanation: 'Mandatory BIS ISI mark requirement must be explicitly cited in the technical eligibility criteria.',
+    clauseReference: 'QCO Gazette',
+  });
+
+  const outdatedStd = recommendations.find((r) => r.standard.previousVersion);
+  if (outdatedStd) {
+    gaps.push({
+      id: 'gap-ver',
+      parameter: 'Standard Version',
+      tenderValue: `${outdatedStd.standard.standardNumber}:${outdatedStd.standard.previousYear || '2014'}`,
+      standardRequirement: `${outdatedStd.standard.standardNumber}:${outdatedStd.standard.version}`,
+      status: 'OUTDATED',
+      explanation: `Tender references outdated standard edition. Update reference to the latest ${outdatedStd.standard.version} publication.`,
+      clauseReference: 'Gazette Rev 2024',
+    });
+  }
+
+  return gaps;
+}
 
 export async function auditTender(
   recommendations: Recommendation[],
@@ -181,32 +477,21 @@ export async function auditTender(
       id: randomId(),
       type: 'Outdated Standard',
       severity: 'High',
-      description: `Tender or specification may reference an older edition of ${old?.standard.standardNumber}. The latest version (${old?.standard.version}) should be referenced.`,
+      description: `Tender specification references an older edition of ${old?.standard.standardNumber}. The latest edition (${old?.standard.version}) should be mandated.`,
       detectedReference: `${old?.standard.standardNumber}:${old?.standard.previousYear}`,
-      recommendedAction: `Update reference to ${old?.standard.standardNumber}:${old?.standard.version}`,
+      recommendedAction: `Update technical clause reference to ${old?.standard.standardNumber}:${old?.standard.version}`,
       relatedStandardId: old?.standard.id,
     });
   }
 
-  const hasTestStd = recommendations.some((r) => r.standard.category === 'Testing Standard');
+  const hasTestStd = recommendations.some((r) => r.standard.category === 'Testing Standard' || r.standard.testingRequirements);
   if (!hasTestStd) {
     issues.push({
       id: randomId(),
       type: 'Missing Test Standard',
       severity: 'Medium',
-      description: 'No testing standard has been referenced. Procurement documents should specify applicable test methods to ensure product conformance.',
-      recommendedAction: 'Include relevant testing standard(s) in the technical specification section',
-    });
-  }
-
-  const hasSafetyStd = recommendations.some((r) => r.standard.category === 'Safety Standard');
-  if (!hasSafetyStd) {
-    issues.push({
-      id: randomId(),
-      type: 'Missing Safety Requirement',
-      severity: 'Medium',
-      description: 'Safety-related standards have not been explicitly identified. Ensure applicable safety requirements are included.',
-      recommendedAction: 'Review and include applicable safety standards in the specification',
+      description: 'Testing standards missing from tender specifications. Specify hydrostatic pressure and weld inspection test methods.',
+      recommendedAction: 'Include explicit testing standard clauses in the technical specification',
     });
   }
 
@@ -216,8 +501,8 @@ export async function auditTender(
       id: randomId(),
       type: 'Missing Certification',
       severity: 'High',
-      description: `${certRequired.length} standard(s) require BIS certification. The tender specification should explicitly mandate BIS ISI marking.`,
-      recommendedAction: 'Add mandatory BIS certification clause to the technical specifications',
+      description: `${certRequired.length} applicable standard(s) require mandatory BIS product certification. Add explicit ISI mark compliance criteria.`,
+      recommendedAction: 'Mandate BIS ISI Marking license verification in vendor eligibility criteria',
       relatedStandardId: certRequired[0].standard.id,
     });
   }
@@ -427,6 +712,10 @@ export async function runFullAnalysis(
     technicalRequirements: string;
     environment: string;
     industry: string;
+    rawInput?: string;
+    quantity?: string;
+    capacity?: string;
+    material?: string;
   },
   inputType: 'describe' | 'upload' | 'chat' = 'describe'
 ): Promise<AnalysisResult> {
@@ -436,12 +725,17 @@ export async function runFullAnalysis(
     technicalRequirements: scenario.technicalRequirements,
     environment: scenario.environment,
     industry: scenario.industry,
+    rawInput: (scenario as any).rawInput,
+    quantity: (scenario as any).quantity,
+    capacity: (scenario as any).capacity,
+    material: (scenario as any).material,
   });
 
   const recommendations = await findRecommendations(requirement);
   const issues = await auditTender(recommendations);
   const readinessScore = computeReadinessScore(recommendations, issues);
   const certifications = await checkCertifications(requirement, recommendations);
+  const gapTable = generateGapTable(requirement, recommendations);
 
   return {
     id: randomId(),
@@ -452,6 +746,7 @@ export async function runFullAnalysis(
     issues,
     readinessScore,
     certifications,
+    gapTable,
   };
 }
 

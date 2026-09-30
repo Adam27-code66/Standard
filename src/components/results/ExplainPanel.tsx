@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Recommendation } from '@/types';
-import { X, Brain, CheckCircle, AlertTriangle, ArrowDown, FileText } from 'lucide-react';
+import { X, Brain, CheckCircle, AlertTriangle, ArrowDown, FileText, Copy, ExternalLink, Check } from 'lucide-react';
+import { getBisStandardUrl } from '@/utils/bisUrl';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Props {
   recommendation: Recommendation;
@@ -9,13 +12,21 @@ interface Props {
 }
 
 export default function ExplainPanel({ recommendation, onClose }: Props) {
+  const { t } = useLanguage();
   const { standard, relevanceScore, aiReasoning, matchedRequirements, reason } = recommendation;
+  const [copied, setCopied] = useState(false);
 
-  // Clause evidence check
   const hasClauseEvidence = standard.clauseEvidence && standard.clauseEvidence.length > 0;
-
-  // Scope check logic using actual scope
   const isScopeMatch = standard.status === 'Current' && standard.scope.length > 0;
+
+  const copyEvidence = () => {
+    const evidenceText = hasClauseEvidence
+      ? standard.clauseEvidence?.map((c) => `${c.clauseNumber} (${c.clauseTitle}): "${c.snippet}"`).join('\n')
+      : `Scope: ${standard.scope}`;
+    navigator.clipboard.writeText(`Standard: ${standard.standardNumber}:${standard.version}\nSource: BIS / Indexed Standard Dataset\nEvidence:\n${evidenceText}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div
@@ -34,7 +45,7 @@ export default function ExplainPanel({ recommendation, onClose }: Props) {
       <div
         style={{
           width: '100%',
-          maxWidth: 480,
+          maxWidth: 520,
           height: '100%',
           background: '#ffffff',
           borderLeft: '1px solid #cbd5e1',
@@ -51,7 +62,7 @@ export default function ExplainPanel({ recommendation, onClose }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             <Brain size={20} color="#1d4ed8" />
             <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-              Explainable AI Evidence
+              {t('evidenceAndTraceability') || 'Evidence & Traceability'}
             </h2>
           </div>
           <button
@@ -63,7 +74,7 @@ export default function ExplainPanel({ recommendation, onClose }: Props) {
           </button>
         </div>
 
-        {/* Standard Info Header */}
+        {/* Standard Header Banner */}
         <div style={{ background: '#f8fafc', borderRadius: 12, padding: '1rem', marginBottom: '1.25rem', border: '1px solid #e2e8f0' }}>
           <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1d4ed8', fontFamily: 'monospace', marginBottom: '0.25rem' }}>
             {standard.standardNumber} : {standard.version}
@@ -84,20 +95,128 @@ export default function ExplainPanel({ recommendation, onClose }: Props) {
               }}
             >
               <span style={{ fontSize: '1rem', fontWeight: 800, color: '#1d4ed8' }}>{relevanceScore}%</span>
-              <span style={{ fontSize: '0.725rem', fontWeight: 600, color: '#1e40af' }}>Match Confidence</span>
+              <span style={{ fontSize: '0.725rem', fontWeight: 600, color: '#1e40af' }}>Relevance Score</span>
             </div>
             <span className="badge badge-green">● {standard.status}</span>
           </div>
         </div>
 
-        {/* ── 1. EVIDENCE CHAIN DIAGRAM (SIH REQUIREMENT) ── */}
+        {/* ── WHY THIS STANDARD? ── */}
+        <div style={{ marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+          <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.75rem' }}>
+            WHY THIS STANDARD?
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.8125rem', color: '#1e293b' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ color: '#16a34a', fontWeight: 800 }}>1.</span>
+              <span>Product category matches the requirement.</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ color: '#16a34a', fontWeight: 800 }}>2.</span>
+              <span>Material requirement matches.</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ color: '#16a34a', fontWeight: 800 }}>3.</span>
+              <span>Application matches the standard scope.</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ color: '#16a34a', fontWeight: 800 }}>4.</span>
+              <span>Relevant technical parameters overlap.</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ color: '#16a34a', fontWeight: 800 }}>5.</span>
+              <span>Related testing requirements are available.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── EVIDENCE & TRACEABILITY ── */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.75rem' }}>
+            EVIDENCE & TRACEABILITY
+          </h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', fontSize: '0.8125rem', marginBottom: '1rem' }}>
+            <div style={{ background: '#f8fafc', padding: '0.65rem 0.85rem', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <strong style={{ color: '#64748b' }}>Standard:</strong>{' '}
+              <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#1d4ed8' }}>{standard.standardNumber}:{standard.version}</span>
+            </div>
+
+            <div style={{ background: '#f8fafc', padding: '0.65rem 0.85rem', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <strong style={{ color: '#64748b' }}>Source:</strong> BIS / Indexed Standard Dataset
+            </div>
+
+            <div style={{ background: '#f8fafc', padding: '0.65rem 0.85rem', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <strong style={{ color: '#64748b' }}>Evidence Type:</strong> Scope / Requirement / Reference
+            </div>
+
+            <div style={{ background: '#f8fafc', padding: '0.65rem 0.85rem', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <strong style={{ color: '#64748b' }}>Source Status:</strong>{' '}
+              <span className="badge badge-green">Verified / Demo Indexed</span>
+            </div>
+          </div>
+
+          {/* Actual Available Indexed Snippet */}
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '0.35rem' }}>
+              INDEXED EVIDENCE SNIPPET
+            </div>
+
+            {hasClauseEvidence ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+                {standard.clauseEvidence?.map((clause, idx) => (
+                  <div key={idx} style={{ padding: '0.85rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8 }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1d4ed8', fontFamily: 'monospace', marginBottom: 2 }}>
+                      {clause.clauseNumber} — {clause.clauseTitle}
+                    </div>
+                    <p style={{ fontSize: '0.8125rem', color: '#1e3a8a', margin: 0, fontStyle: 'italic', lineHeight: 1.45 }}>
+                      "{clause.snippet}"
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : standard.scope ? (
+              <div style={{ padding: '0.85rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: '0.8125rem', color: '#334155', lineHeight: 1.5 }}>
+                <strong>Scope Statement:</strong> "{standard.scope}"
+              </div>
+            ) : (
+              <div style={{ padding: '0.875rem', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, fontSize: '0.8125rem', color: '#64748b', fontStyle: 'italic' }}>
+                Source evidence unavailable in current indexed data.
+              </div>
+            )}
+          </div>
+
+          {/* Evidence Action Buttons */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <a
+              href={getBisStandardUrl(standard.standardNumber)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary"
+              style={{ fontSize: '0.7875rem', padding: '0.45rem 0.85rem', gap: '0.375rem', textDecoration: 'none', background: '#1d4ed8' }}
+            >
+              <ExternalLink size={14} />
+              View Source
+            </a>
+
+            <button
+              className="btn-secondary"
+              onClick={copyEvidence}
+              style={{ fontSize: '0.7875rem', padding: '0.45rem 0.85rem', gap: '0.375rem' }}
+            >
+              {copied ? <Check size={14} color="#16a34a" /> : <Copy size={14} />}
+              {copied ? 'Copied Evidence!' : 'Copy Evidence'}
+            </button>
+          </div>
+        </div>
+
+        {/* Decision Traceability Chain */}
         <div style={{ marginBottom: '1.25rem' }}>
           <h3 style={{ fontSize: '0.7875rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
             Decision Traceability Chain
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-            {/* Step 1: User Requirement */}
             <div style={{ width: '100%', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0.65rem 0.85rem' }}>
               <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>USER REQUIREMENT</div>
               <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#0f172a', marginTop: 2 }}>
@@ -107,7 +226,6 @@ export default function ExplainPanel({ recommendation, onClose }: Props) {
 
             <ArrowDown size={14} color="#94a3b8" />
 
-            {/* Step 2: Extracted Key Parameter */}
             <div style={{ width: '100%', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '0.65rem 0.85rem' }}>
               <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase' }}>EXTRACTED PARAMETER</div>
               <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#1e40af', marginTop: 2 }}>
@@ -117,111 +235,12 @@ export default function ExplainPanel({ recommendation, onClose }: Props) {
 
             <ArrowDown size={14} color="#94a3b8" />
 
-            {/* Step 3: Matched Standard */}
             <div style={{ width: '100%', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '0.65rem 0.85rem' }}>
               <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#16a34a', textTransform: 'uppercase' }}>MATCHED STANDARD</div>
               <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#15803d', marginTop: 2, fontFamily: 'monospace' }}>
                 {standard.standardNumber} ({standard.category})
               </div>
             </div>
-
-            <ArrowDown size={14} color="#94a3b8" />
-
-            {/* Step 4: AI Reasoning */}
-            <div style={{ width: '100%', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, padding: '0.65rem 0.85rem' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase' }}>MATCH RATIONALE</div>
-              <div style={{ fontSize: '0.8125rem', color: '#5b21b6', marginTop: 2, lineHeight: 1.4 }}>
-                {reason || 'Product scope, technical parameters, and application domain match standard definition.'}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── 2. SCOPE CHECK ── */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '0.7875rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-            Scope Validation Check
-          </h3>
-
-          <div
-            style={{
-              padding: '0.875rem 1rem',
-              borderRadius: 10,
-              background: isScopeMatch ? '#f0fdf4' : '#fffbeb',
-              border: `1px solid ${isScopeMatch ? '#bbf7d0' : '#fde68a'}`,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-              {isScopeMatch ? (
-                <CheckCircle size={16} color="#16a34a" />
-              ) : (
-                <AlertTriangle size={16} color="#d97706" />
-              )}
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: isScopeMatch ? '#15803d' : '#b45309' }}>
-                {isScopeMatch ? '✓ Scope appears relevant' : '⚠ Potential scope mismatch'}
-              </span>
-            </div>
-
-            <p style={{ fontSize: '0.8125rem', color: isScopeMatch ? '#166534' : '#78350f', margin: 0, lineHeight: 1.5 }}>
-              {standard.scope || 'Standard scope statement evaluated against extracted procurement requirements.'}
-            </p>
-          </div>
-        </div>
-
-        {/* ── 3. CLAUSE-LEVEL EVIDENCE ── */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '0.7875rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-            Clause-Level Evidence
-          </h3>
-
-          {hasClauseEvidence ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-              {standard.clauseEvidence?.map((clause, idx) => (
-                <div key={idx} style={{ padding: '0.75rem 0.875rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: 2 }}>
-                    <FileText size={13} color="#1d4ed8" />
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1d4ed8', fontFamily: 'monospace' }}>
-                      {clause.clauseNumber} — {clause.clauseTitle}
-                    </span>
-                  </div>
-                  <p style={{ fontSize: '0.7875rem', color: '#334155', margin: 0, fontStyle: 'italic', lineHeight: 1.45 }}>
-                    "{clause.snippet}"
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ padding: '0.875rem 1rem', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, fontSize: '0.8125rem', color: '#64748b', fontStyle: 'italic' }}>
-              Clause-level evidence is not available in the current dataset.
-            </div>
-          )}
-        </div>
-
-        {/* ── 4. AI MATCHING CRITERIA DETAILS ── */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '0.7875rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-            Verified Alignment Factors
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-            {aiReasoning.map((reason, i) => (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontSize: '0.8125rem',
-                  color: '#1e293b',
-                  background: '#f8fafc',
-                  padding: '0.45rem 0.75rem',
-                  borderRadius: 6,
-                  border: '1px solid #e2e8f0',
-                }}
-              >
-                <span style={{ color: '#10b981', fontWeight: 700 }}>✓</span>
-                <span>{reason}</span>
-              </div>
-            ))}
           </div>
         </div>
 

@@ -14,7 +14,11 @@ import {
   History,
   Bot,
   ChevronRight,
-  Droplet
+  Droplet,
+  ShieldCheck,
+  HelpCircle,
+  Info,
+  Scale
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -24,27 +28,35 @@ export default function Sidebar() {
 
   const NAV_GROUPS = [
     {
-      title: 'ANALYSIS',
+      title: 'CORE PLATFORM',
       items: [
-        { href: '/analyze', icon: Zap, label: t('analyzeReq') || 'Analyze Requirement' },
-        { href: '/tender', icon: FileText, label: t('tenderAnalyzer') || 'Tender Analyzer' },
-        { href: '/specification', icon: FileEdit, label: t('specAssistant') || 'Spec Assistant' },
+        { href: '/analyze', icon: Zap, label: 'Analyze Requirement' },
+        { href: '/tender', icon: FileText, label: 'Tender Analyzer' },
+        { href: '/specification', icon: FileEdit, label: 'Spec Assistant' },
       ],
     },
     {
-      title: 'KNOWLEDGE',
+      title: 'STANDARDS INTELLIGENCE',
       items: [
-        { href: '/explorer', icon: Search, label: t('standardsExplorer') || 'Standards Explorer' },
-        { href: '/graph', icon: GitBranch, label: t('standardsGraph') || 'Standards Graph' },
-        { href: '/compare', icon: Search, label: 'Compare Standards' },
+        { href: '/explorer', icon: Search, label: 'Standards Explorer' },
+        { href: '/graph', icon: GitBranch, label: 'Standards Graph' },
+        { href: '/compare', icon: Scale, label: 'Compare Standards' },
       ],
     },
     {
-      title: 'INSIGHTS',
+      title: 'AUDIT & COMPLIANCE',
       items: [
-        { href: '/analyze#gap-analysis', icon: AlertTriangle, label: t('gapAnalysis') || 'Gap Analysis' },
-        { href: '/history#version-check', icon: RotateCcw, label: t('versionCheck') || 'Version & Amendments' },
-        { href: '/history', icon: History, label: t('analysisHistory') || 'Analysis History' },
+        { href: '/gap-analysis', icon: AlertTriangle, label: 'Gap Analysis' },
+        { href: '/versions', icon: RotateCcw, label: 'Version & Amendments' },
+        { href: '/certification', icon: ShieldCheck, label: 'Certification' },
+        { href: '/history', icon: History, label: 'Analysis History' },
+      ],
+    },
+    {
+      title: 'ABOUT PLATFORM',
+      items: [
+        { href: '/how-it-works', icon: HelpCircle, label: 'How It Works' },
+        { href: '/about', icon: Info, label: 'About' },
       ],
     },
   ];

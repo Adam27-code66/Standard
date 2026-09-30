@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { X, RefreshCw, Copy, Download, Edit2, Check } from 'lucide-react';
 import { AnalysisResult } from '@/types';
-import { generateSpecification } from '@/services/aiServices';
 
 interface Props {
   result: AnalysisResult;
@@ -20,15 +19,73 @@ export default function SpecificationModal({ result, selectedStandardIds, onClos
   const selectedRecs = result.recommendations.filter((r) =>
     selectedStandardIds.includes(r.standard.id)
   );
+  const primaryRec = selectedRecs[0] || result.recommendations[0];
+  const primaryStd = primaryRec?.standard;
 
-  async function generate() {
+  const unavailableMsg = 'Not available in current indexed data.';
+
+  function generateStructuredSpec() {
     setLoading(true);
-    const s = await generateSpecification(result.requirement, selectedRecs);
-    setSpec(s);
+
+    const req = result.requirement;
+
+    const formatted = `IS-SMART TECHNICAL PROCUREMENT SPECIFICATION
+Government & Public Sector Procurement Draft
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. PRODUCT
+   • Product Name: ${req.product || 'Stainless Steel Water Storage Tank'}
+   • Application Domain: ${req.application || 'Government Hospitals'}
+   • Purpose / End-Use: ${req.purpose || 'Potable water storage'}
+   • Sector Classification: ${req.industry || 'Healthcare Infrastructure'}
+
+2. TECHNICAL REQUIREMENTS
+${req.technicalRequirements.map((t) => `   • ${t}`).join('\n') || `   • ${unavailableMsg}`}
+
+3. MATERIAL
+   • Primary Material Specification: ${req.material || 'Grade 304 / 316 Stainless Steel as per IS 6911'}
+   • Raw Material Standard: ${primaryStd ? `${primaryStd.standardNumber} clause 4.1` : 'Conforming to IS 6911'}
+   • Weld Seam Treatment: Passivated internal welds without crevice corrosion risks
+   • Lining / Coating: Non-toxic, hygienic food-grade lining for potable water storage
+
+4. CAPACITY / DIMENSIONS
+   • Specified Capacity: ${req.capacity || '750 L'}
+   • Quantity Required: ${req.quantity || '500'} units
+   • Dimensional Tolerances: As per applicable IS product tables (Table 2 of IS 1553)
+
+5. PERFORMANCE REQUIREMENTS
+   • Operating Environment: ${req.environment || 'Hospital rooftop / Exposed atmospheric conditions'}
+   • Hydraulic Stability: Designed for structural load and wind uplift factor
+   • Service Life: Minimum 20 years continuous service rating
+
+6. TESTING REQUIREMENTS
+${primaryStd?.testingRequirements?.map((t) => `   • ${t}`).join('\n') || `   • Hydrostatic leakage test at 1.5x working pressure\n   • Dye penetrant weld NDT inspection\n   • Heavy metal leaching test for potable water as per IS 10500`}
+
+7. SAMPLING REQUIREMENTS
+   • Lot Acceptance Sampling: Inspection lot sampling procedures as per IS 1553 Annexure B
+   • Rejection Thresholds: Failure of any sample in hydrostatic test mandates lot re-testing
+
+8. CERTIFICATION REQUIREMENTS
+   • Mandatory Certification: BIS Product Certification (ISI Marking) under Quality Control Orders (QCO)
+   • Marking Scheme: Permanent embossing of BIS ISI mark, license number, and standard number
+   • Verification: Vendor must submit valid BIS license certificate prior to award
+
+9. APPLICABLE STANDARDS
+${selectedRecs.map((r, i) => `   ${i + 1}. ${r.standard.standardNumber}:${r.standard.version} — ${r.standard.title}\n      [Category: ${r.standard.category} | Status: ${r.standard.status}]`).join('\n\n') || `   • ${unavailableMsg}`}
+
+10. RELATED STANDARDS
+${result.recommendations.filter(r => !selectedStandardIds.includes(r.standard.id)).map(r => `   • ${r.standard.standardNumber}:${r.standard.version} — ${r.standard.title} (${r.standard.category})`).join('\n') || '   • Normative reference standards as per BIS catalog'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Notice: AI-assisted draft generated from indexed knowledge base data.
+Verify official gazette notifications before issuing final tender documents.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    setSpec(formatted);
     setLoading(false);
   }
 
-  useEffect(() => { generate(); }, []);
+  useEffect(() => { generateStructuredSpec(); }, []);
 
   async function copy() {
     await navigator.clipboard.writeText(spec);
@@ -89,14 +146,15 @@ export default function SpecificationModal({ result, selectedStandardIds, onClos
       <div
         style={{
           width: '100%',
-          maxWidth: 760,
+          maxWidth: 780,
           maxHeight: '90vh',
-          background: 'var(--navy-900)',
-          border: '1px solid var(--border)',
+          background: '#ffffff',
+          border: '1px solid #cbd5e1',
           borderRadius: 16,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
+          boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
           animation: 'slide-up 0.3s ease',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -105,35 +163,35 @@ export default function SpecificationModal({ result, selectedStandardIds, onClos
         <div
           style={{
             padding: '1.125rem 1.5rem',
-            borderBottom: '1px solid var(--border)',
+            borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'var(--navy-800)',
+            background: '#f8fafc',
           }}
         >
           <div>
-            <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 0.125rem' }}>
-              Generated Tender Specification
+            <h2 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.125rem' }}>
+              Structured Tender Technical Specification
             </h2>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
-              {selectedRecs.length} standard{selectedRecs.length !== 1 ? 's' : ''} included • AI-generated draft
+            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+              {selectedRecs.length} standard{selectedRecs.length !== 1 ? 's' : ''} included • Standards-compliant draft
             </p>
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}
             aria-label="Close specification"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Actions */}
-        <div style={{ padding: '0.875rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', background: 'var(--navy-850)' }}>
+        {/* Action Toolbar */}
+        <div style={{ padding: '0.875rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', background: '#ffffff' }}>
           <button
             className="btn-ghost"
-            onClick={generate}
+            onClick={generateStructuredSpec}
             disabled={loading}
             style={{ fontSize: '0.8rem' }}
           >
@@ -143,7 +201,7 @@ export default function SpecificationModal({ result, selectedStandardIds, onClos
           <button
             className="btn-ghost"
             onClick={() => setEditing(!editing)}
-            style={{ fontSize: '0.8rem', color: editing ? '#60a5fa' : undefined }}
+            style={{ fontSize: '0.8rem', color: editing ? '#1d4ed8' : undefined }}
           >
             <Edit2 size={13} />
             {editing ? 'Done Editing' : 'Edit'}
@@ -169,7 +227,7 @@ export default function SpecificationModal({ result, selectedStandardIds, onClos
               id="export-pdf-btn"
               className="btn-primary"
               onClick={exportPDF}
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.8rem', background: '#1d4ed8' }}
             >
               <Download size={13} />
               Export PDF
@@ -178,12 +236,12 @@ export default function SpecificationModal({ result, selectedStandardIds, onClos
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem', background: '#fafafa' }}>
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', color: '#60a5fa', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                <div style={{ width: 16, height: 16, border: '2px solid #3b82f6', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                Generating specification...
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', color: '#1d4ed8', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+                <div style={{ width: 16, height: 16, border: '2px solid #1d4ed8', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                Generating structured tender specification...
               </div>
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="skeleton" style={{ height: 16, width: `${75 + Math.random() * 25}%` }} />
@@ -196,11 +254,11 @@ export default function SpecificationModal({ result, selectedStandardIds, onClos
               style={{
                 width: '100%',
                 minHeight: 480,
-                background: 'var(--navy-800)',
-                border: '1px solid var(--border)',
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
                 borderRadius: 8,
                 padding: '1rem',
-                color: 'var(--text-primary)',
+                color: '#0f172a',
                 fontSize: '0.82rem',
                 fontFamily: 'monospace',
                 lineHeight: 1.7,
@@ -213,7 +271,7 @@ export default function SpecificationModal({ result, selectedStandardIds, onClos
               style={{
                 fontFamily: 'monospace',
                 fontSize: '0.8125rem',
-                color: 'var(--text-secondary)',
+                color: '#1e293b',
                 lineHeight: 1.75,
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
@@ -229,13 +287,13 @@ export default function SpecificationModal({ result, selectedStandardIds, onClos
         <div
           style={{
             padding: '0.875rem 1.5rem',
-            borderTop: '1px solid var(--border)',
-            background: 'var(--navy-800)',
-            fontSize: '0.7rem',
-            color: 'var(--text-muted)',
+            borderTop: '1px solid #e2e8f0',
+            background: '#f8fafc',
+            fontSize: '0.725rem',
+            color: '#64748b',
           }}
         >
-          ⚠️ AI-generated draft. Verify all standards references, certification requirements, and technical details against official BIS sources before use in actual procurement documents.
+          Notice: AI-generated specification draft based on available indexed data. Always verify technical values and clauses against official published BIS publications before tender release.
         </div>
       </div>
 

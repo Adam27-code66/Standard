@@ -335,30 +335,25 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </span>
         </button>
 
-        {/* User Profile Avatar Pill */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', paddingLeft: '0.25rem' }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              background: 'var(--primary)',
-              color: '#ffffff',
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 6px rgba(37, 99, 235, 0.3)',
-            }}
-          >
-            A
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.1 }}>Admin</span>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 1 }}>Administrator</span>
-          </div>
-        </div>
+        {/* Primary CTA: Start Analysis */}
+        <button
+          onClick={() => router.push('/analyze')}
+          className="btn-primary"
+          style={{
+            padding: '0.45rem 1rem',
+            borderRadius: 20,
+            fontSize: '0.8125rem',
+            fontWeight: 700,
+            gap: '0.375rem',
+            marginLeft: '0.25rem',
+            background: 'var(--primary)',
+            color: '#ffffff',
+            boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+          }}
+        >
+          <span>Start Analysis</span>
+          <ArrowRight size={14} />
+        </button>
       </div>
     </header>
   );

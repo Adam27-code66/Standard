@@ -6,6 +6,9 @@ import { Zap, FileText, MessageCircle } from 'lucide-react';
 import { DEMO_SCENARIOS } from '@/data/demoScenarios';
 import { AnalysisResult } from '@/types';
 import { runFullAnalysis, saveToHistory } from '@/services/aiServices';
+import { useProject } from '@/context/ProjectContext';
+import { useLanguage } from '@/context/LanguageContext';
+import RequirementWorkspace from '@/components/common/RequirementWorkspace';
 import DescribeTab from './DescribeTab';
 import UploadTab from './UploadTab';
 import ChatTab from './ChatTab';
@@ -13,13 +16,16 @@ import ProcessingAnimation from './ProcessingAnimation';
 import AnalysisResults from '../results/AnalysisResults';
 
 const TABS = [
-  { id: 'describe', label: 'Describe Product', icon: Zap },
-  { id: 'upload', label: 'Upload Tender', icon: FileText },
+  { id: 'describe', label: 'Describe Product / Requirement', icon: Zap },
+  { id: 'upload', label: 'Upload Tender Document', icon: FileText },
   { id: 'chat', label: 'AI Assistant', icon: MessageCircle },
 ];
 
 export default function AnalyzeWorkspace() {
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
+  const { activeProject, addHistoryRecord, updateActiveProject } = useProject();
+
   const [activeTab, setActiveTab] = useState<'describe' | 'upload' | 'chat'>('describe');
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -31,41 +37,62 @@ export default function AnalyzeWorkspace() {
     industry: '',
   });
 
-  // Auto-load scenario from URL param
+  // Sync formData with active project
   useEffect(() => {
-    const scenarioId = searchParams.get('scenario');
-    if (scenarioId) {
-      const scenario = DEMO_SCENARIOS.find((s) => s.id === scenarioId);
-      if (scenario) {
-        setFormData({
-          product: scenario.product,
-          purpose: scenario.purpose,
-          technicalRequirements: scenario.technicalRequirements,
-          environment: scenario.environment,
-          industry: scenario.industry,
-        });
-        setActiveTab('describe');
-      }
+    if (activeProject) {
+      const ext = activeProject.extractedRequirements;
+      setFormData({
+        product: ext?.product?.value || activeProject.name || 'General Requirement',
+        purpose: ext?.application?.value || 'Procurement Analysis',
+        technicalRequirements: activeProject.rawInputText || '',
+        environment: ext?.material?.value || '',
+        industry: ext?.otherRequirements?.value || 'Infrastructure',
+      });
     }
-  }, [searchParams]);
+  }, [activeProject]);
 
-  const handleAnalyze = async (data?: typeof formData) => {
-    const input = data || formData;
+  const handleAnalyze = async (data?: any) => {
     setAnalyzing(true);
     setResult(null);
     try {
-      const analysisResult = await runFullAnalysis(
-        {
-          product: input.product || 'General Product',
-          purpose: input.purpose || '',
-          technicalRequirements: input.technicalRequirements || '',
-          environment: input.environment || '',
-          industry: input.industry || 'General',
-        },
-        activeTab
-      );
+      let analysisResult: AnalysisResult;
+      if (data && data.extractedRequirements) {
+        analysisResult = await runFullAnalysis(data, activeTab);
+      } else {
+        const input = data || formData;
+        analysisResult = await runFullAnalysis(
+          {
+            product: input.product || activeProject?.name || 'General Product',
+            purpose: input.purpose || '',
+            technicalRequirements: Array.isArray(input.technicalRequirements) ? input.technicalRequirements.join('\n') : (input.technicalRequirements || ''),
+            environment: input.environment || '',
+            industry: input.industry || 'General',
+            rawInput: activeProject?.rawInputText || input.rawInput || input.product,
+            quantity: input.quantity,
+            capacity: input.capacity,
+            material: input.material,
+          },
+          activeTab
+        );
+      }
+
       setResult(analysisResult);
       saveToHistory(analysisResult);
+
+      // Save in Project Context
+      if (activeProject) {
+        updateActiveProject({ lastAnalysis: analysisResult });
+        addHistoryRecord({
+          projectId: activeProject.id,
+          projectName: activeProject.name,
+          analysisType: 'Requirement Analysis',
+          status: 'Completed',
+          language: 'English',
+          inputSource: activeProject.name,
+          summary: `Extracted ${analysisResult.recommendations.length} applicable standards and found ${analysisResult.gapTable.length} gap checklist items.`,
+          result: analysisResult,
+        });
+      }
     } catch (err) {
       console.error('Analysis error:', err);
     } finally {
@@ -73,42 +100,11 @@ export default function AnalyzeWorkspace() {
     }
   };
 
-  const handleLoadScenario = (scenarioId: string) => {
-    const scenario = DEMO_SCENARIOS.find((s) => s.id === scenarioId);
-    if (scenario) {
-      setFormData({
-        product: scenario.product,
-        purpose: scenario.purpose,
-        technicalRequirements: scenario.technicalRequirements,
-        environment: scenario.environment,
-        industry: scenario.industry,
-      });
-    }
-  };
-
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-
-      {/* ── Demo Scenarios ───────────────────────────────── */}
+      {/* ── Reusable Requirement / Project Workspace ────── */}
       {!result && !analyzing && (
-        <div className="glass-card" style={{ padding: '1rem 1.25rem', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-              Demo scenarios:
-            </span>
-            {DEMO_SCENARIOS.map((s) => (
-              <button
-                key={s.id}
-                className="btn-ghost"
-                onClick={() => handleLoadScenario(s.id)}
-                style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', gap: '0.375rem' }}
-              >
-                <span>{s.icon}</span>
-                {s.name}
-              </button>
-            ))}
-          </div>
-        </div>
+        <RequirementWorkspace onAnalyze={() => handleAnalyze()} showAnalyzeBtn />
       )}
 
       {/* ── Tabs ─────────────────────────────────────────── */}
@@ -134,7 +130,7 @@ export default function AnalyzeWorkspace() {
                   style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                 >
                   <Icon size={14} />
-                  {tab.label}
+                  {t(tab.id) || tab.label}
                 </button>
               );
             })}

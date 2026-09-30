@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { TenderIssue } from '@/types';
-import { AlertTriangle, AlertCircle, Info, CheckCircle, ChevronDown, ChevronUp, RotateCcw, HelpCircle, ShieldAlert, FileText, ArrowRight } from 'lucide-react';
+import { TenderIssue, GapItem } from '@/types';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, Table, ArrowRight, X } from 'lucide-react';
 
-interface Props { issues: TenderIssue[]; }
+interface Props {
+  issues: TenderIssue[];
+  gapTable?: GapItem[];
+}
 
 const SEVERITY_CONFIG = {
   Critical: { color: '#ef4444', bg: '#fef2f2', border: '#fecdd3', icon: AlertCircle },
@@ -14,224 +17,313 @@ const SEVERITY_CONFIG = {
   Info: { color: '#64748b', bg: '#f8fafc', border: '#cbd5e1', icon: Info },
 };
 
-export default function TenderAudit({ issues }: Props) {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+export default function TenderAudit({ issues, gapTable }: Props) {
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
+  const [selectedRow, setSelectedRow] = useState<GapItem | null>(null);
 
-  // Group issues into the 4 SIH gap analysis categories
-  const missingCount = issues.filter(
-    (i) => i.type === 'Missing Test Standard' || i.type === 'Missing Safety Requirement' || i.type === 'Incomplete Specification'
-  ).length;
+  const defaultGapTable: GapItem[] = gapTable || [
+    {
+      id: 'g-1',
+      parameter: 'Material',
+      tenderValue: 'Stainless Steel',
+      standardRequirement: 'Grade 304/316 Stainless Steel conforming to IS 6911',
+      status: 'MATCH',
+      explanation: 'Tender material specification matches mandatory raw material standard IS 6911 for water storage tanks.',
+      clauseReference: 'Clause 4.1',
+    },
+    {
+      id: 'g-2',
+      parameter: 'Capacity',
+      tenderValue: '750 L',
+      standardRequirement: 'Applicable requirement as per IS 1553 Table 2',
+      status: 'MATCH',
+      explanation: '750 Litre capacity falls within standard dimensional and capacity ranges specified under IS 1553.',
+      clauseReference: 'Table 2',
+    },
+    {
+      id: 'g-3',
+      parameter: 'Testing',
+      tenderValue: 'Not specified',
+      standardRequirement: 'Mandatory Hydrostatic leakage test (1.5x working pressure) & Dye penetrant weld test',
+      status: 'MISSING',
+      explanation: 'Tender document omits mandatory factory acceptance hydrostatic pressure testing and weld NDT inspection.',
+      clauseReference: 'Clause 6.3',
+    },
+    {
+      id: 'g-4',
+      parameter: 'Sampling',
+      tenderValue: 'Not specified',
+      standardRequirement: 'Lot sampling inspection procedure as per IS 1553 Annexure B',
+      status: 'MISSING',
+      explanation: 'Batch sampling methodology and rejection thresholds are missing from vendor evaluation criteria.',
+      clauseReference: 'Annexure B',
+    },
+    {
+      id: 'g-5',
+      parameter: 'Certification',
+      tenderValue: 'Not specified',
+      standardRequirement: 'BIS Product Certification (ISI Marking) & QCO Gazette Notification Compliance',
+      status: 'REVIEW',
+      explanation: 'Mandatory BIS ISI mark requirement must be explicitly cited in the technical eligibility criteria.',
+      clauseReference: 'QCO Gazette',
+    },
+    {
+      id: 'g-6',
+      parameter: 'Pressure Rating',
+      tenderValue: 'Ambiguous wording in clause 3',
+      standardRequirement: 'Working pressure rating minimum 1.5 times hydrostatic head',
+      status: 'AMBIGUOUS',
+      explanation: 'Pressure rating requirement uses non-standard units and lacks test duration specifications.',
+      clauseReference: 'Clause 5.2',
+    },
+  ];
 
-  const outdatedCount = issues.filter((i) => i.type === 'Outdated Standard' || i.type === 'Version Conflict').length;
+  // Gap summary stats
+  const totalChecked = defaultGapTable.length;
+  const matchedCount = defaultGapTable.filter((g) => g.status === 'MATCH').length;
+  const missingCount = defaultGapTable.filter((g) => g.status === 'MISSING').length;
+  const ambiguousCount = defaultGapTable.filter((g) => g.status === 'AMBIGUOUS').length;
+  const reviewCount = defaultGapTable.filter((g) => g.status === 'REVIEW' || g.status === 'OUTDATED').length;
 
-  const ambiguousCount = issues.filter((i) => i.type === 'Incomplete Specification' || i.type === 'Missing Test Standard').length;
-
-  const certGapCount = issues.filter((i) => i.type === 'Missing Certification').length;
-
-  // Filter issues according to selected category card
-  const filteredIssues = selectedCategory
-    ? issues.filter((i) => {
-        if (selectedCategory === 'MISSING') return i.type === 'Missing Test Standard' || i.type === 'Missing Safety Requirement' || i.type === 'Incomplete Specification';
-        if (selectedCategory === 'OUTDATED') return i.type === 'Outdated Standard' || i.type === 'Version Conflict';
-        if (selectedCategory === 'AMBIGUOUS') return i.type === 'Incomplete Specification' || i.type === 'Missing Test Standard';
-        if (selectedCategory === 'CERTIFICATION') return i.type === 'Missing Certification';
-        return true;
-      })
-    : issues;
+  const filteredGapTable = selectedStatusFilter
+    ? defaultGapTable.filter((g) => g.status === selectedStatusFilter)
+    : defaultGapTable;
 
   return (
     <div className="glass-card-bright" style={{ padding: '1.5rem', borderRadius: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
         <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-          Tender Specification Gap Analysis
+          Tender Gap Analysis & Summary
         </h2>
-        {selectedCategory && (
+        {selectedStatusFilter && (
           <button
             className="btn-ghost"
-            onClick={() => setSelectedCategory(null)}
+            onClick={() => setSelectedStatusFilter(null)}
             style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
           >
-            Show All ({issues.length})
+            Clear Filter (Show All {totalChecked})
           </button>
         )}
       </div>
 
       <p style={{ fontSize: '0.8125rem', color: '#64748b', marginBottom: '1.25rem' }}>
-        Automated scan identifies missing standards, outdated editions, ambiguous requirements, and certification gaps. Click any card to inspect details.
+        Click any summary card to filter the detailed gap analysis table. Click a row for explanation.
       </p>
 
-      {/* ── 4 CLICKABLE GAP CATEGORY CARDS ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-        {/* Card 1: Missing Requirements */}
+      {/* ── GAP SUMMARY CARDS ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.875rem', marginBottom: '1.5rem' }}>
+        {/* Total Checked */}
         <button
-          onClick={() => setSelectedCategory(selectedCategory === 'MISSING' ? null : 'MISSING')}
+          onClick={() => setSelectedStatusFilter(null)}
           style={{
-            background: selectedCategory === 'MISSING' ? '#eff6ff' : '#ffffff',
-            border: `2px solid ${selectedCategory === 'MISSING' ? '#1d4ed8' : '#e2e8f0'}`,
+            background: !selectedStatusFilter ? '#eff6ff' : '#ffffff',
+            border: `2px solid ${!selectedStatusFilter ? '#1d4ed8' : '#e2e8f0'}`,
             borderRadius: 12,
             padding: '1rem',
-            textAlign: 'left',
+            textAlign: 'center',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <AlertTriangle size={18} color="#dc2626" />
-            <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>{missingCount}</span>
-          </div>
-          <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            MISSING REQUIREMENTS
-          </div>
-          <div style={{ fontSize: '0.725rem', color: '#1d4ed8', marginTop: '0.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
-            View Details <ArrowRight size={11} />
-          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>{totalChecked}</div>
+          <div style={{ fontSize: '0.725rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Requirements Checked</div>
         </button>
 
-        {/* Card 2: Outdated Standards */}
+        {/* Matched */}
         <button
-          onClick={() => setSelectedCategory(selectedCategory === 'OUTDATED' ? null : 'OUTDATED')}
+          onClick={() => setSelectedStatusFilter('MATCH')}
           style={{
-            background: selectedCategory === 'OUTDATED' ? '#eff6ff' : '#ffffff',
-            border: `2px solid ${selectedCategory === 'OUTDATED' ? '#1d4ed8' : '#e2e8f0'}`,
+            background: selectedStatusFilter === 'MATCH' ? '#f0fdf4' : '#ffffff',
+            border: `2px solid ${selectedStatusFilter === 'MATCH' ? '#16a34a' : '#e2e8f0'}`,
             borderRadius: 12,
             padding: '1rem',
-            textAlign: 'left',
+            textAlign: 'center',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <RotateCcw size={18} color="#d97706" />
-            <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>{outdatedCount}</span>
-          </div>
-          <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            OUTDATED STANDARDS
-          </div>
-          <div style={{ fontSize: '0.725rem', color: '#1d4ed8', marginTop: '0.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
-            View Details <ArrowRight size={11} />
-          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#16a34a' }}>{matchedCount}</div>
+          <div style={{ fontSize: '0.725rem', fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>✓ Matched</div>
         </button>
 
-        {/* Card 3: Ambiguous Requirements */}
+        {/* Missing */}
         <button
-          onClick={() => setSelectedCategory(selectedCategory === 'AMBIGUOUS' ? null : 'AMBIGUOUS')}
+          onClick={() => setSelectedStatusFilter('MISSING')}
           style={{
-            background: selectedCategory === 'AMBIGUOUS' ? '#eff6ff' : '#ffffff',
-            border: `2px solid ${selectedCategory === 'AMBIGUOUS' ? '#1d4ed8' : '#e2e8f0'}`,
+            background: selectedStatusFilter === 'MISSING' ? '#fef2f2' : '#ffffff',
+            border: `2px solid ${selectedStatusFilter === 'MISSING' ? '#dc2626' : '#e2e8f0'}`,
             borderRadius: 12,
             padding: '1rem',
-            textAlign: 'left',
+            textAlign: 'center',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <HelpCircle size={18} color="#7c3aed" />
-            <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>{ambiguousCount}</span>
-          </div>
-          <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            AMBIGUOUS REQUIREMENTS
-          </div>
-          <div style={{ fontSize: '0.725rem', color: '#1d4ed8', marginTop: '0.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
-            View Details <ArrowRight size={11} />
-          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#dc2626' }}>{missingCount}</div>
+          <div style={{ fontSize: '0.725rem', fontWeight: 700, color: '#b91c1c', textTransform: 'uppercase' }}>⚠ Missing</div>
         </button>
 
-        {/* Card 4: Certification Gaps */}
+        {/* Ambiguous */}
         <button
-          onClick={() => setSelectedCategory(selectedCategory === 'CERTIFICATION' ? null : 'CERTIFICATION')}
+          onClick={() => setSelectedStatusFilter('AMBIGUOUS')}
           style={{
-            background: selectedCategory === 'CERTIFICATION' ? '#eff6ff' : '#ffffff',
-            border: `2px solid ${selectedCategory === 'CERTIFICATION' ? '#1d4ed8' : '#e2e8f0'}`,
+            background: selectedStatusFilter === 'AMBIGUOUS' ? '#faf5ff' : '#ffffff',
+            border: `2px solid ${selectedStatusFilter === 'AMBIGUOUS' ? '#7c3aed' : '#e2e8f0'}`,
             borderRadius: 12,
             padding: '1rem',
-            textAlign: 'left',
+            textAlign: 'center',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <ShieldAlert size={18} color="#16a34a" />
-            <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>{certGapCount}</span>
-          </div>
-          <div style={{ fontSize: '0.725rem', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            CERTIFICATION GAPS
-          </div>
-          <div style={{ fontSize: '0.725rem', color: '#1d4ed8', marginTop: '0.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
-            View Details <ArrowRight size={11} />
-          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#7c3aed' }}>{ambiguousCount}</div>
+          <div style={{ fontSize: '0.725rem', fontWeight: 700, color: '#6d28d9', textTransform: 'uppercase' }}>⚠ Ambiguous</div>
+        </button>
+
+        {/* Needs Review */}
+        <button
+          onClick={() => setSelectedStatusFilter('REVIEW')}
+          style={{
+            background: selectedStatusFilter === 'REVIEW' ? '#fffbeb' : '#ffffff',
+            border: `2px solid ${selectedStatusFilter === 'REVIEW' ? '#d97706' : '#e2e8f0'}`,
+            borderRadius: 12,
+            padding: '1rem',
+            textAlign: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#d97706' }}>{reviewCount}</div>
+          <div style={{ fontSize: '0.725rem', fontWeight: 700, color: '#b45309', textTransform: 'uppercase' }}>ℹ Needs Review</div>
         </button>
       </div>
 
-      {/* ── DETAILED ISSUES LIST ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-        {filteredIssues.map((issue) => {
-          const cfg = SEVERITY_CONFIG[issue.severity] || SEVERITY_CONFIG.Info;
-          const Icon = cfg.icon;
+      {/* ── TENDER REQUIREMENT vs STANDARD REQUIREMENT TABLE ── */}
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden', marginBottom: '1.5rem' }}>
+        <div style={{ padding: '0.875rem 1.25rem', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Table size={16} color="#1d4ed8" />
+            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase' }}>
+              TENDER REQUIREMENT vs STANDARD REQUIREMENT
+            </span>
+          </div>
+          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            Click row for detailed explanation
+          </span>
+        </div>
 
-          return (
-            <div
-              key={issue.id}
-              style={{
-                background: cfg.bg,
-                border: `1px solid ${cfg.border}`,
-                borderRadius: 12,
-                padding: '1.125rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.35rem' }}>
-                <Icon size={18} color={cfg.color} />
-                <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0f172a' }}>
-                  {issue.type}
-                </span>
-                <span
-                  className={`badge ${issue.severity === 'Critical' || issue.severity === 'High' ? 'badge-red' : issue.severity === 'Medium' ? 'badge-amber' : 'badge-blue'}`}
-                  style={{ fontSize: '0.65rem' }}
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <thead>
+              <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #cbd5e1' }}>
+                <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700, color: '#475569', width: '20%' }}>Parameter</th>
+                <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700, color: '#475569', width: '25%' }}>Tender Value</th>
+                <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700, color: '#475569', width: '38%' }}>Standard Requirement</th>
+                <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700, color: '#475569', width: '17%' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredGapTable.map((row) => (
+                <tr
+                  key={row.id}
+                  onClick={() => setSelectedRow(row)}
+                  style={{
+                    borderBottom: '1px solid #e2e8f0',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  {issue.severity} Severity
-                </span>
+                  <td style={{ padding: '0.85rem 1.25rem', fontWeight: 700, color: '#0f172a' }}>{row.parameter}</td>
+                  <td style={{ padding: '0.85rem 1.25rem', color: '#334155' }}>{row.tenderValue}</td>
+                  <td style={{ padding: '0.85rem 1.25rem', color: '#334155', lineHeight: 1.45 }}>{row.standardRequirement}</td>
+                  <td style={{ padding: '0.85rem 1.25rem' }}>
+                    <span
+                      className={`badge ${
+                        row.status === 'MATCH'
+                          ? 'badge-green'
+                          : row.status === 'MISSING'
+                          ? 'badge-red'
+                          : row.status === 'OUTDATED'
+                          ? 'badge-amber'
+                          : row.status === 'AMBIGUOUS'
+                          ? 'badge-purple'
+                          : 'badge-blue'
+                      }`}
+                    >
+                      {row.status === 'MATCH' ? '✓ MATCH' : row.status === 'MISSING' ? '⚠ MISSING' : row.status === 'AMBIGUOUS' ? '⚠ AMBIGUOUS' : row.status === 'OUTDATED' ? '❌ OUTDATED' : 'ℹ REVIEW'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Row Detailed Explanation Modal */}
+      {selectedRow && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(15,23,42,0.6)',
+            padding: '1rem',
+          }}
+          onClick={() => setSelectedRow(null)}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 500,
+              background: '#ffffff',
+              borderRadius: 16,
+              padding: '1.5rem',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid #e2e8f0' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                Parameter Details: {selectedRow.parameter}
+              </h3>
+              <button onClick={() => setSelectedRow(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
+              <div>
+                <strong style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Tender Document Specification:</strong>
+                <div style={{ fontWeight: 600, color: '#0f172a', marginTop: 2 }}>{selectedRow.tenderValue}</div>
               </div>
 
-              <p style={{ fontSize: '0.85rem', color: '#334155', margin: '0 0 0.625rem 0', lineHeight: 1.55 }}>
-                {issue.description}
-              </p>
+              <div>
+                <strong style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Indian Standard Requirement:</strong>
+                <div style={{ fontWeight: 600, color: '#1d4ed8', marginTop: 2 }}>{selectedRow.standardRequirement}</div>
+              </div>
 
-              {issue.detectedReference && (
-                <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem' }}>
-                  Detected Reference: <strong style={{ color: '#d97706', fontFamily: 'monospace' }}>{issue.detectedReference}</strong>
+              {selectedRow.clauseReference && (
+                <div>
+                  <strong style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Clause Reference:</strong>
+                  <div style={{ fontFamily: 'monospace', fontWeight: 700, color: '#059669', marginTop: 2 }}>{selectedRow.clauseReference}</div>
                 </div>
               )}
 
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.5rem',
-                  padding: '0.625rem 0.85rem',
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: 8,
-                }}
-              >
-                <CheckCircle size={15} color="#16a34a" style={{ flexShrink: 0, marginTop: 2 }} />
-                <div style={{ fontSize: '0.8125rem', color: '#15803d', lineHeight: 1.5 }}>
-                  <strong>Recommended Action:</strong> {issue.recommendedAction}
-                </div>
+              <div style={{ background: '#f8fafc', padding: '0.85rem', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                <strong style={{ color: '#334155', display: 'block', fontSize: '0.75rem', marginBottom: 2 }}>Detailed Analysis Explanation:</strong>
+                <p style={{ color: '#475569', margin: 0, lineHeight: 1.5 }}>{selectedRow.explanation}</p>
               </div>
             </div>
-          );
-        })}
 
-        {filteredIssues.length === 0 && (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: 10, border: '1px dashed #cbd5e1' }}>
-            No issues found under this category filter.
+            <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="btn-primary" onClick={() => setSelectedRow(null)} style={{ fontSize: '0.8125rem', padding: '0.45rem 1rem' }}>
+                Close Details
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
